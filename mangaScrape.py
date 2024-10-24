@@ -10,11 +10,11 @@ from random import randint
 
 options = ChromeOptions()
 options.add_argument("--headless=new")
-# options.add_argument("--log-level=3")
+options.add_argument("--log-level=3")
 driver = webdriver.Chrome(options=options)
 mangaSeeBase = "https://mangasee123.com"
 mangakakalotBase = "https://mangakakalot.com"
-headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
+headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.3"
 
 BASE_DLPATH = "D:/MANGA STORAGE"
 
@@ -270,34 +270,46 @@ def update_entry():
     print(full_status)
 
 
-def download_manga_mk():
-    print('a')
-# MANGASEE
-
-# our "find manga" portion needs to verify that the selected manga is for mangasee
-
-
-def download_manga_ms():
+def download_helper(source):
     found_list_idx = []
-    # figure out which entry we want to rip from
-    # pass pages with some debounce timer or something inbetween each scrape
     selected = input("Hello! Select a manga from your list to scrape: ")
     with open("mangaData.json", "r") as outfile:
         data = json.load(outfile)
     for i in range(len(data)):
         if (selected in data[i]['title'] or selected.capitalize() in data[i]["title"]):
-            found_list_idx.append(i)
-    if (len(found_list_idx) != 0):
+            print("FOUND MATCH")
+            if data[i]["source"] == source:
+                print("FOUND MATCH AND SOURCE")
+                found_list_idx.append(i)
+    if len(found_list_idx) != 0:
         for i in range(len(found_list_idx)):
             print(str(i+1) + ": " + data[found_list_idx[i]]["title"])
         selected_manga_idx = input("Select a manga from your searched items: ")
         realIdx = found_list_idx[int(selected_manga_idx)-1]
-        get_chapter_list(realIdx)
+        return realIdx
+    else:
+        print("Error, Item was not found in your list with the selected source ")
+        return -1
 
+
+def download_manga_mk():
+    realIdx = download_helper(mangakakalotBase)
+    if realIdx != -1:
+        get_chapter_list_mk(realIdx)
+    else:
+        raise Exception("Index is out of bounds for MK download")
+
+
+def download_manga_ms():
+    realIdx = download_helper(mangaSeeBase)
+    if realIdx != -1:
+        get_chapter_list_ms(realIdx)
+    else:
+        raise Exception("Index is out of bounds for MS download")
 # MANGASEE HELPER
 
 
-def get_chapter_list(manga_idx):
+def get_chapter_list_ms(manga_idx):
     chapter_list = []
     with open("mangaData.json", "r") as f:
         data = json.load(f)
@@ -311,18 +323,42 @@ def get_chapter_list(manga_idx):
         chapter_list.append(anchor_tags[i]['href'].replace("-page-1", ""))
     download_handler(chapter_list, manga_idx)
 
-# MANGASEE HELPER
+
+def get_chapter_list_mk(manga_idx):
+    chapter_list = []
+    with open("mangaData.json", "r") as f:
+        data = json.load(f)
+    manga_source = data[manga_idx]["link"]
+    driver.get(manga_source)
+    if "chapmanganato" in manga_source:
+        # row-content-chapter
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        chapter_container = soup.find('ul', class_="row-content-chapter")
+        list_items = chapter_container.findAll("li", class_="a-h")
+        for i in range(len(list_items)):
+            anchor = list_items[i].find('a')
+            link = anchor['href']
+            chapter_list.append(link)
+    if "mangakakalot" in manga_source:
+        # chapter-list
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        chapter_container = soup.find('div', class_="chapter-list")
+        outter_wrappers = chapter_container.findAll("div", class_="row")
+        for i in range(len(outter_wrappers)):
+            span = outter_wrappers[i].find("span")
+            anchor = span.find("a")
+            link = anchor['href']
+            chapter_list.append(link)
+    download_handler(chapter_list, manga_idx)
 
 
 def download_handler(chapter_list, manga_idx):
-    # print(chapter_list, manga_idx)
-    download_start_idx = -1
     with open("mangaData.json", "r") as f:
         data = json.load(f)
+    download_start_idx = -1
     if data[manga_idx]['lastRipped'] == -1:
         download_start_idx = len(chapter_list)-1
     else:
-        # find the "lastRipped" chapter suffix in chapter_list array
         for i in range(len(chapter_list)):
             if data[manga_idx]['lastRipped'] == chapter_list[i]:
                 download_start_idx = i-1
@@ -336,41 +372,121 @@ def download_handler(chapter_list, manga_idx):
         print("No more chapters to gather: Last updated at " +
               data[manga_idx]['lastUpdated'] + " with chapter " + data[manga_idx]["lastChapter"])
         return
-    for i in reversed(range(download_start_idx+1)):
-        # verify that chapter_list[i] is NOT out of range
-        print(chapter_list[i] + " WE ARE HERE " +
-              str(default_pages) + " pages left")
-        if (default_pages == 0):
-            break
-        if rip_manga(data[manga_idx]['source'] + chapter_list[i], data, manga_idx) != True:
-            break
+    # section this for loop off for each source
+    if data[manga_idx]["source"] == mangaSeeBase:
+        for i in reversed(range(download_start_idx+1)):
+            # verify that chapter_list[i] is NOT out of range
+            print(chapter_list[i] + " WE ARE HERE " +
+                  str(default_pages) + " pages left")
+            if (default_pages == 0):
+                break
+            if rip_manga_ms(data[manga_idx]['source'] + chapter_list[i], data, manga_idx) != True:
+                raise Exception(
+                    "Error downloading the content requested: Mangasee")
+            else:
+                print("Update the data with the latest lastRipped")
+                data[manga_idx]['lastRipped'] = chapter_list[i]
+                with open('mangaData.json', "w") as outfile:
+                    json.dump(data, outfile, indent=4)
+            default_pages = default_pages-1
+            time.sleep(randint(29, 62))
+            if (0 >= i-1) and (i-1 > len(chapter_list)):
+                print("No more chapters to gather: Last updated at " +
+                      data[manga_idx]['lastUpdated'])
+                raise Exception("No more chapters to gather")
+    elif data[manga_idx]["source"] == mangakakalotBase:
+        for i in reversed(range(download_start_idx+1)):
+            print(chapter_list[i] + " WE ARE HERE " +
+                  str(default_pages) + " pages left")
+            if (default_pages == 0):
+                break
+            if rip_manga_mk(chapter_list[i], data, manga_idx) != True:
+                raise Exception(
+                    "Error downloading the content requested: Mangakakalot")
+            else:
+                print("Update the data with the latest lastRipped")
+                data[manga_idx]['lastRipped'] = chapter_list[i]
+                with open('mangaData.json', "w") as outfile:
+                    json.dump(data, outfile, indent=4)
+            default_pages = default_pages-1
+            time.sleep(randint(29, 62))
+            if (0 >= i-1) and (i-1 > len(chapter_list)):
+                print("No more chapters to gather: Last updated at " +
+                      data[manga_idx]['lastUpdated'])
+                raise Exception("No more chapters to gather")
+
+
+def rip_manga_mk(page, data, manga_idx):
+    chapter_images = []
+    search_url = page
+    driver.get(search_url)
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    image_container = soup.find('div', class_="container-chapter-reader")
+    chapter_folder = ""
+    # chapter folder creations
+    if "chapmanganato" in data[manga_idx]['link']:
+        chapter_selection = soup.find("select", class_="navi-change-chapter")
+        chapter_selection = chapter_selection.find("option", selected=True)
+        chapter_selection = clean_and_strip(chapter_selection.text)
+        chapter_folder += chapter_selection
+    elif "mangakakalot" in data[manga_idx]["link"]:
+        chapter_h1 = soup.find("h1", class_="current-chapter")
+        chapter_text = chapter_h1.text
+        chapter_text = chapter_text.split(": ")
+        for splt in chapter_text:
+            if "chapter" in splt or "Chapter" in splt:
+                chapter_text = clean_and_strip(splt)
+                break
+        chapter_folder += chapter_text
+    if '-' not in chapter_folder:
+        chapter_folder = "S0 - " + chapter_folder
+    try:
+        pathlib.Path(BASE_DLPATH + "/" + data[manga_idx]['title'] +
+                     "/" + chapter_folder).mkdir(parents=True, exist_ok=False)
+    except FileExistsError:
+        return False
+    # grabbing image from chapter
+    all_images = image_container.findAll('img')
+    for img in all_images:
+        if (img.has_attr('title') and img):
+            img_src = img.get('src')
+            chapter_images.append(img_src)
+    print(chapter_images)
+    image_count = 0
+    for image_url in chapter_images:
+        referer = ""
+        fileName = image_url.split('/')
+        fileName = fileName[len(fileName)-1]
+        if "chapmanganato" in data[manga_idx]['link']:
+            referer = "https://chapmanganato.to/"
+        elif "mangakakalot" in data[manga_idx]['link']:
+            referer = "https://mangakakalot.com/"
+        response = requests.get(image_url, headers={
+                                'UserAgent': headers, 'referer': referer})
+        if (response.status_code != 200):
+            print("Error getting the current file")
+            return False
         else:
-            print("Update the data with the latest lastRipped")
-            data[manga_idx]['lastRipped'] = chapter_list[i]
-            with open('mangaData.json', "w") as outfile:
-                json.dump(data, outfile, indent=4)
-        default_pages = default_pages-1
-        time.sleep(randint(29, 62))
-        if (0 >= i-1) and (i-1 > len(chapter_list)):
-            print("No more chapters to gather: Last updated at " +
-                  data[manga_idx]['lastUpdated'])
-            break
-
-# MANGASEE IMAGE SCRAPER
+            print("Woooo we have our images")
+            with open(BASE_DLPATH + "/" + data[manga_idx]['title'] + "/" + chapter_folder + '/' + fileName, 'wb') as f:
+                noop = f.write(response.content)
+                print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +
+                      "/" + chapter_folder + '/' + fileName))
+        image_count += 1
+        if image_count % 10 == 0:
+            time.sleep(randint(9, 15))
 
 
-def rip_manga(page, data, manga_idx):
+def rip_manga_ms(page, data, manga_idx):
     driver.get(page)
     chapter_images = []
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     chapter_folder = soup.select_one(
         'button[data-target="#ChapterModal"]').text
-    chapter_folder = chapter_folder.strip('\n\t ')
+    chapter_folder = clean_and_strip(chapter_folder)
     if '-' not in chapter_folder:
         chapter_folder = 'S0 - ' + chapter_folder
     image_elements = soup.find_all('img', class_="img-fluid")
-    # MANGA FOLDER / TITLE FOLDER / CHAPTER FOLDER
-    # Chapter information can be taken from the target data chapter button
     try:
         pathlib.Path(BASE_DLPATH + "/" + data[manga_idx]['title'] +
                      "/" + chapter_folder).mkdir(parents=True, exist_ok=False)
@@ -401,30 +517,6 @@ def rip_manga(page, data, manga_idx):
     return True
 
 # MANGAKAKALOT SCRAPER
-
-
-def scrape_mangakakalot(page):
-    chapter_images = []
-    search_url = "https://chapmanganato.to/manga-aa951883/chapter-613"
-    driver.get(search_url)
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    image_container = soup.find('div', class_="container-chapter-reader")
-    all_images = image_container.findAll('img')
-    for img in all_images:
-        if (img.has_attr('title')):
-            img_src = img.get('src')
-            chapter_images.append(img_src)
-    print(chapter_images)
-    for image_url in chapter_images:
-        response = requests.get(image_url, headers={
-                                'UserAgent': headers, 'referer': "https://chapmanganato.to/"})
-        if (response.status_code != 200):
-            print("Error getting the current file")
-            return False
-        else:
-            print("Woooo we have our images")
-
-# STAYS THE SAME
 
 
 def view_manga():
