@@ -1,4 +1,5 @@
 Goals:
+MANGASEE WILL HAVE A COMPLETE REWRITE... SO THIS MIGHT BREAK AT ANY MOMENT 
 					COMPLETE:
 					-Kavita requires a volume description of the parent folder of the images
 						- certain manga will already have said delineation, while others dont
@@ -6,7 +7,9 @@ Goals:
 						- How do I determine if the manga already has some type of volume delineation?
 						- make sure they do have said delineation if they do not
 						- cheap, possibly naieve solution would be to check if the "Chapter" item that was scraped had some sort of hyphen in it, if it does, we can assume a delineation for volumes or seasons, if not we add one?
+					-Search for both sources are complete for now
 					DONE - the naieve solution seems to be working for now, so I will keep it as is.
+		
 
 -PLEASE FOR THE LOVE OF GOD DO MORE ERROR CHECKING AND DATA VALIDATION
 
@@ -31,22 +34,3 @@ Fix required for genre reading portion on mangasee, sometimes reading in author 
 -Finally ensure we don't get blocked or overload their CDN or website by adding more appropriate checks and delays
 	-So far so good I've been enjoying reading all my new manga/manhwa/comics :D
 	Then I can enjoy my new full Kavita library with my own stored manga/manhwa/comics, maybe even setup a reverse proxy for out-network viewing for when I leave the house
-
-
-
-
-SEPERATION NOTES:
-	Search manga - user asks for a specific book, search both sources, when user decides on source take the branch of that source
-	[mangasee]-[mangakakalot]
-		/	 		\
-	using the specified tools to assist in scraping based on the chosen source
-
-	Current Create entry can be generalized to just be passed cleaned data and make an entry, which will be served by the specific source function(s)
-		-Getting basic info, and cleaning it will be specialized
-	Insert to file is as generalized as it can be. Used only when CreateEntry is called
-
-	Update entry can be generalized: select book to update -> call specialized function for the source the book belongs to, recieve and clean information, then proceed with the normal update via end of update entry
-		-Getting new info, cleaning info will be specialized
-		-Not sure if mangakakalot will be able to be scraped the same way, the CDN automatically blocks any IP that attempts to open their image links through a browser
-		-Not sure if its because of referer being missing when opening the link seperately, will test to verify later.
-		Can recieve images if i put referer from the host website. I need to be more careful on information validation (file type and source validation)
