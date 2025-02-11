@@ -19,7 +19,7 @@
         "type": "",
         "link": "https://mangasee123.com/manga/Tower-Of-God",
         "source": "https://mangasee123.com",
-        "lastRipped": "/read-online/Tower-Of-God-chapter-202-index-3.html"
+        "lastRipped": "/read-online/Tower-Of-God-chapter-227-index-3.html"
     },
     {
         "author": "Fuyuki23,  TurtleMe",
@@ -30,7 +30,6 @@
         "translation": "Official Translation",
         "title": "The Beginning After the End",
         "genres": [
-            "TurtleMe",
             "Action",
             "Adventure",
             "Fantasy",
@@ -40,7 +39,7 @@
         "type": "",
         "link": "https://mangasee123.com/manga/The-Beginning-After-The-End",
         "source": "https://mangasee123.com",
-        "lastRipped": "/read-online/The-Beginning-After-The-End-chapter-188.html"
+        "lastRipped": "/read-online/The-Beginning-After-The-End-chapter-200.html"
     },
     {
         "author": "LEE Subaek",
@@ -143,7 +142,7 @@
         "type": "",
         "link": "https://mangasee123.com/manga/The-World-After-the-Fall",
         "source": "https://mangasee123.com",
-        "lastRipped": "/read-online/The-World-After-the-Fall-chapter-138.html"
+        "lastRipped": "/read-online/The-World-After-the-Fall-chapter-148.html"
     },
     {
         "author": "Nong Nong,  Sa Doyeon",
@@ -432,7 +431,7 @@
         "type": "",
         "link": "https://mangasee123.com/manga/A-Returners-Magic-Should-Be-Special",
         "source": "https://mangasee123.com",
-        "lastRipped": "/read-online/A-Returners-Magic-Should-Be-Special-chapter-190.html"
+        "lastRipped": -1
     },
     {
         "author": "ADACHI Mitsuru",
@@ -518,7 +517,7 @@
         "type": "",
         "link": "https://mangasee123.com/manga/Omniscient-Readers-Viewpoint",
         "source": "https://mangasee123.com",
-        "lastRipped": -1
+        "lastRipped": "/read-online/Omniscient-Readers-Viewpoint-chapter-207.html"
     },
     {
         "author": "Swing Bat,  WAN.Z",
@@ -537,6 +536,65 @@
         "type": "",
         "link": "https://mangasee123.com/manga/Solo-Max-Level-Newbie",
         "source": "https://mangasee123.com",
+        "lastRipped": "/read-online/Solo-Max-Level-Newbie-chapter-134.html"
+    },
+    {
+        "author": "Rakhyun,  YC",
+        "released": "2020",
+        "status": "Ongoing (Scan), Ongoing (Publish)",
+        "lastChapter": "206",
+        "lastUpdated": "09/21/2024",
+        "translation": "Official Translation",
+        "title": "Teenage Mercenary",
+        "genres": [
+            "YC",
+            "Action",
+            "Drama",
+            "Romance",
+            "School Life",
+            "Shounen"
+        ],
+        "type": "",
+        "link": "https://mangasee123.com/manga/Mercenary-Enrollment",
+        "source": "https://mangasee123.com",
+        "lastRipped": "/read-online/Mercenary-Enrollment-chapter-120.html"
+    },
+    {
+        "author": "Voke,Goriff (\uace0\ub9ac\ud504),Lorenzo (\ub85c\ub80c\uc870),Hammi (\ud568\ubbf8)",
+        "status": "Ongoing",
+        "lastChapter": "Chapter 98",
+        "lastUpdated": "Aug-30-2024 18",
+        "translation": "N/A",
+        "title": "To Hell With Being A Saint, I\u2019M A Doctor",
+        "genres": [
+            "Action",
+            "Adventure",
+            "Drama",
+            "Fantasy",
+            "Medical",
+            "Manhwa",
+            "Isekai"
+        ],
+        "type": "",
+        "link": "https://chapmanganato.to/manga-nc990937",
+        "source": "https://mangakakalot.com",
+        "lastRipped": -1
+    },
+    {
+        "author": "SUGITO Akira",
+        "status": "Ongoing",
+        "lastChapter": "Chapter 3",
+        "lastUpdated": "Sep-26-2024 02",
+        "translation": "N/A",
+        "title": "Tokyo Kaijin Rhapsody",
+        "genres": [
+            "Action",
+            "Comedy",
+            "Seinen"
+        ],
+        "type": "",
+        "link": "https://mangakakalot.com/manga/um942432",
+        "source": "https://mangakakalot.com",
         "lastRipped": -1
     }
 ]
