@@ -12,7 +12,7 @@ options = ChromeOptions()
 options.add_argument("--headless=new")
 options.add_argument("--log-level=3")
 driver = webdriver.Chrome(options=options)
-mangaSeeBase = "https://mangasee123.com"
+mangaSeeBase = "https://weebcentral.com"
 mangakakalotBase = "https://mangakakalot.com"
 headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.3"
 
