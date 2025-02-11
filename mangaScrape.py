@@ -12,7 +12,7 @@ options = ChromeOptions()
 options.add_argument("--headless=new")
 options.add_argument("--log-level=3")
 driver = webdriver.Chrome(options=options)
-mangaSeeBase = "https://mangasee123.com"
+weebCentralBase = "https://weebcentral.com"
 mangakakalotBase = "https://mangakakalot.com"
 headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.3"
 
@@ -26,7 +26,7 @@ def clean_and_strip(item):
 
 def search_manga_ms():
     user_manga = input("Enter manga: ")
-    search_url = "https://mangasee123.com/search/?name=" + user_manga
+    search_url = 'https://weebcentral.com/search/?text=${user_manga}&sort=Best+Match&order=Ascending&official=Any&anime=Any&adult=Any&display_mode=Full+Display'
     driver.get(search_url)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     manga_dne = soup.find('div', class_="NoResults")
