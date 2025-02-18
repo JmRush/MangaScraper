@@ -7,6 +7,8 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 import time
 from random import randint
+from datetime import date
+from urllib.parse import quote
 
 options = ChromeOptions()
 options.add_argument("--headless=new")
@@ -25,19 +27,26 @@ def clean_and_strip(item):
 
 
 def search_manga_ms():
+    not_found = False
     user_manga = input("Enter manga: ")
-    search_url = 'https://weebcentral.com/search/?text=${user_manga}&sort=Best+Match&order=Ascending&official=Any&anime=Any&adult=Any&display_mode=Full+Display'
+    user_manga = quote(user_manga)
+    search_url = f'https://weebcentral.com/search/?text={user_manga}&sort=Best+Match&order=Ascending&official=Any&anime=Any&adult=Any&display_mode=Full+Display'
     driver.get(search_url)
+    time.sleep(2)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    manga_dne = soup.find('div', class_="NoResults")
-    if manga_dne:
-        print("Please enter a valid manga name, " + user_manga + " not found")
-        return -1
+    manga_dne = soup.findAll('span')
+    for span in manga_dne:
+        if span.text == "No results found":
+            not_found = True
+    if not_found == True:
+        print("Manga not found, please try a different search: ")
+        return
     # continue and show user list of manga names and links
-    manga_results = soup.find_all('a', class_="SeriesName ng-binding")
-    # now we have a list of manga results
-    # take these and their names and display them to the user, ask the user to select one, and ask if the user would like to add that manga
-    # to their list
+    unsorted_manga_results = soup.find_all('a', class_="link link-hover")
+    manga_results = []
+    for manga in unsorted_manga_results:
+        if "https://weebcentral.com/series/" in manga['href']:
+            manga_results.append(manga)
     for i in range(len(manga_results)):
         list_num = i+1
         print(str(list_num) + ". " + manga_results[i].text)
@@ -48,16 +57,23 @@ def search_manga_ms():
         answer = input(
             "Would you like to add this manga to your library? Y/N: ")
         if answer == "Y" or answer == "y":
-            print("yes")
             selected_manga_title = manga_results[int(selected_manga)-1].text
             print(selected_manga_title)
             print("--------------------")
             # send title and genre seperately than the rest of raw data
-            manga_genre_tags = manga_results[int(
-                selected_manga)-1].parent.findAll('span', "ng-binding ng-scope")
+            manga_parent_wrapper = manga_results[int(
+                selected_manga)-1].parent.parent
+            manga_data_fields = manga_parent_wrapper.findAll("div", "opacity-70")
+            manga_genre_tags = []
+            for manga in manga_data_fields:
+                header_tag = manga.find("strong")
+                header = header_tag.text
+                if "Tag(s):" in header:
+                    manga_genre_tags = header_tag.parent.findAll("span")
+            print(manga_genre_tags)
             create_entry_ms(selected_manga_title,
-                            manga_results[int(selected_manga)-1].parent, manga_genre_tags, manga_results[int(
-                                selected_manga)-1]['href'], mangaSeeBase)
+                            manga_parent_wrapper, manga_genre_tags, manga_results[int(
+                                selected_manga)-1]['href'], weebCentralBase)
 
         else:
             print("Item not added")
@@ -104,14 +120,6 @@ def search_manga_mk():
             story_author = clean_and_strip(story_data[0].text.split(':')[1])
             story_last_updated = clean_and_strip(
                 story_data[1].text.split(':')[1])
-            # print(title)
-            # print(story_latest_chapter)
-            # print(story_author)
-            # print(story_last_updated)
-            # print(mangakakalotBase)
-            # print(story_link)
-            # print(genres)
-            # print(status)
             genres, status = get_genre_status(story_link)
             mk_entry = {
                 "author": story_author,
@@ -175,53 +183,48 @@ def get_genre_status(link):
 
 def create_entry_ms(selectedTitle, selectedManga, manga_genre_tags, search_url, base_url):
     # check if selected title is saved in file, if not go for it!
-    raw_manga_data = selectedManga.findAll('div', "ng-scope")
+    raw_manga_data = selectedManga.findAll('div', "opacity-70")
     cleanData = []
-    clean_genre_list = []
+    cleanGenreTags = []
     # loop through this array and get text for author, year, status, latest chapter (and date updated) and genres (AND LINK)
-    for i in range(len(raw_manga_data)):
-        # want to seperate year and author, splitting gives a list of size 2, inserting these back
-        if '·' in raw_manga_data[i].text:
-            extraneous_char = raw_manga_data[i].text.split('·')
-            for j in range(len(extraneous_char)):
-                extraneous_char[j] = clean_and_strip(extraneous_char[j])
-                cleanData.append(extraneous_char[j])
+    # year status, genres
+    for selection in raw_manga_data:
+        label = selection.find("strong")
+        if "Tag(s):" in label:
             continue
-        else:
-            cleanData.append(clean_and_strip(raw_manga_data[i].text))
-    cleanData.append(selectedTitle)
-    for i in range(len(manga_genre_tags)):
-        # strip of leading and trailing spaces,
-        clean_genre_list.append(
-            manga_genre_tags[i].text.strip('\n\t, '))
-    # turn this processed list into a json object to store in my list of manga the user wants to keep updated or is interested in
-    clean_genre_list.pop(0)
-    # remove everything prior and including :
-    for i in range(len(cleanData)):
-        if (':' in cleanData[i]):
-            split = cleanData[i].split(':')
-            split[1] = split[1].strip(' ')
-            cleanData[i] = split[1]
-        else:
-            continue
-    cleanData[3] = cleanData[3].split(" ")[1]
+        data = selection.findAll("span")
+        fullData = ""
+        for datum in data:
+            fullData += datum.text
+        cleanData.append(fullData)
+    today = date.today()
+    todayF = today.strftime("%m-%d-%Y")
+    author = selectedManga.find("a", "link link-info link-hover").text
+    for genreTag in manga_genre_tags:
+        tag = clean_and_strip(genreTag.text)
+        tag = tag.replace(",", "")
+        cleanGenreTags.append(tag)
+    translation = selectedManga.find("abbr")["title"]
+    if "Official Translation" in translation:
+        translation = "Official Translation"
+    else:
+        translation = "Not Official Translation"
+
     new_entry = {
-        "author": cleanData[0],
-        "released": cleanData[1],
-        "status": cleanData[2],
-        "lastChapter": cleanData[3],
-        "lastUpdated": cleanData[4],
-        "translation": cleanData[5],
+        "author": author,
+        "released": cleanData[0],
+        "status": cleanData[1],
+        "lastChapter": -1,
+        "lastUpdated": todayF,
+        "translation": translation,
         "title": selectedTitle,
-        "genres": clean_genre_list,
-        "type": "",
-        "link": base_url + search_url,
+        "genres": cleanGenreTags,
+        "type": cleanData[2],
+        "link": search_url,
         "source": base_url,
         "lastRipped": -1
     }
     insert_to_file(new_entry)
-
-# STAYS THE SAME ON UPDATE
 
 
 def insert_to_file(new_entry):
@@ -230,44 +233,8 @@ def insert_to_file(new_entry):
     with open('mangaData.json', "r") as outfile:
         data = json.load(outfile)
     data.append(new_entry)
-    print(data)
     with open('mangaData.json', "w") as outfile:
         json.dump(data, outfile, indent=4)
-
-# WIP
-
-
-def update_entry():
-    type_info = -1
-    status_info = -1
-    full_status = -1
-    data = view_manga()
-    selected_manga = input("Select a entry to update: ")
-    selected_manga = int(selected_manga) - 1
-    print("You've chosen to update: " + data[selected_manga]['title'])
-    driver.get(data[selected_manga]['link'])
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    manga_page = soup.findAll("li", class_="list-group-item d-none d-md-block")
-    for item in manga_page:
-        item_header = item.find('span', class_="mlabel").text
-        if (item_header == "Status:"):
-            status_info = item.findAll('a').text
-        elif (item_header == "Type:"):
-            type_info = item.find('a').text
-    if (status_info == "" or status_info == [] or status_info == None):
-        print("No status info found")
-        status_info = -1
-    if (type_info == "" or type_info == None):
-        print("No Type found")
-        type_info = -1
-    # select latest chapter, get chapter number and date it was posted
-    if (type_info != -1):
-        data[selected_manga]['type'] = type_info
-    if (len(status_info) == 1):
-        full_status = status_info[0]
-    elif (len(status_info) == 2):
-        full_status = status_info[0] + ', ' + status_info[1]
-    print(full_status)
 
 
 def download_helper(source):
@@ -301,7 +268,7 @@ def download_manga_mk():
 
 
 def download_manga_ms():
-    realIdx = download_helper(mangaSeeBase)
+    realIdx = download_helper(weebCentralBase)
     if realIdx != -1:
         get_chapter_list_ms(realIdx)
     else:
@@ -373,7 +340,7 @@ def download_handler(chapter_list, manga_idx):
               data[manga_idx]['lastUpdated'] + " with chapter " + data[manga_idx]["lastChapter"])
         return
     # section this for loop off for each source
-    if data[manga_idx]["source"] == mangaSeeBase:
+    if data[manga_idx]["source"] == weebCentralBase:
         for i in reversed(range(download_start_idx+1)):
             # verify that chapter_list[i] is NOT out of range
             print(chapter_list[i] + " WE ARE HERE " +
@@ -563,7 +530,7 @@ def main():
         case "3":
             search_manga_mk()
         case "4":
-            update_entry()
+            pass
         case "5":
             download_manga_ms()
         case "6":
