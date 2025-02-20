@@ -281,13 +281,15 @@ def get_chapter_list_ms(manga_idx):
     with open("mangaData.json", "r") as f:
         data = json.load(f)
     driver.get(data[manga_idx]["link"])
-    expand_button = driver.find_element(By.CLASS_NAME, 'ShowAllChapters')
+    expand_button = driver.find_element(By.ID, "chapter-list")
+    expand_button = expand_button.find_element(By.TAG_NAME, "button")
     expand_button.click()
+    time.sleep(5)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    anchor_tags = soup.find_all(
-        'a', class_="list-group-item ChapterLink ng-scope")
+    chapter_wrapper = soup.find(id="chapter-list")
+    anchor_tags = chapter_wrapper.find_all('a', class_="hover:bg-base-300 flex-1 flex items-center p-2")
     for i in range(len(anchor_tags)):
-        chapter_list.append(anchor_tags[i]['href'].replace("-page-1", ""))
+        chapter_list.append(anchor_tags[i]['href'])#.replace("-page-1", ""))
     download_handler(chapter_list, manga_idx)
 
 
@@ -343,11 +345,10 @@ def download_handler(chapter_list, manga_idx):
     if data[manga_idx]["source"] == weebCentralBase:
         for i in reversed(range(download_start_idx+1)):
             # verify that chapter_list[i] is NOT out of range
-            print(chapter_list[i] + " WE ARE HERE " +
-                  str(default_pages) + " pages left")
+            print(chapter_list[i] + " WE ARE HERE " +str(default_pages) + " pages left")
             if (default_pages == 0):
                 break
-            if rip_manga_ms(data[manga_idx]['source'] + chapter_list[i], data, manga_idx) != True:
+            if rip_manga_ms(chapter_list[i], data, manga_idx) != True:
                 raise Exception(
                     "Error downloading the content requested: Mangasee")
             else:
@@ -358,8 +359,7 @@ def download_handler(chapter_list, manga_idx):
             default_pages = default_pages-1
             time.sleep(randint(29, 62))
             if (0 >= i-1) and (i-1 > len(chapter_list)):
-                print("No more chapters to gather: Last updated at " +
-                      data[manga_idx]['lastUpdated'])
+                print("No more chapters to gather: Last updated at " +data[manga_idx]['lastUpdated'])
                 raise Exception("No more chapters to gather")
     elif data[manga_idx]["source"] == mangakakalotBase:
         for i in reversed(range(download_start_idx+1)):
@@ -368,8 +368,7 @@ def download_handler(chapter_list, manga_idx):
             if (default_pages == 0):
                 break
             if rip_manga_mk(chapter_list[i], data, manga_idx) != True:
-                raise Exception(
-                    "Error downloading the content requested: Mangakakalot")
+                raise Exception("Error downloading the content requested: Mangakakalot")
             else:
                 print("Update the data with the latest lastRipped")
                 data[manga_idx]['lastRipped'] = chapter_list[i]
@@ -447,16 +446,17 @@ def rip_manga_mk(page, data, manga_idx):
 def rip_manga_ms(page, data, manga_idx):
     driver.get(page)
     chapter_images = []
+    time.sleep(2)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    chapter_folder = soup.select_one(
-        'button[data-target="#ChapterModal"]').text
+    chapter_folder_wrapper = soup.find("button", "col-span-4 lg:flex-1 btn btn-secondary")
+    chapter_folder = chapter_folder_wrapper.find("span").text
     chapter_folder = clean_and_strip(chapter_folder)
     if '-' not in chapter_folder:
         chapter_folder = 'S0 - ' + chapter_folder
-    image_elements = soup.find_all('img', class_="img-fluid")
+    image_elements = soup.find_all('img', class_="maw-w-full mx-auto")
+    print(image_elements)
     try:
-        pathlib.Path(BASE_DLPATH + "/" + data[manga_idx]['title'] +
-                     "/" + chapter_folder).mkdir(parents=True, exist_ok=False)
+        pathlib.Path(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder).mkdir(parents=True, exist_ok=False)
     except FileExistsError:
         return False
     # make request for each image src :)
@@ -467,8 +467,7 @@ def rip_manga_ms(page, data, manga_idx):
     for image_url in chapter_images:
         fileName = image_url.split('/')
         fileName = fileName[len(fileName)-1]
-        response = requests.get(image_url, headers={
-                                'UserAgent': headers, 'referer': "https://mangasee123.com/"})
+        response = requests.get(image_url, headers={'UserAgent': headers, 'referer': "https://weebcentral.com/"})
         if (response.status_code != 200):
             print("Error getting the current file")
             return False
