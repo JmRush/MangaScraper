@@ -1,6 +1,6 @@
 import json
 from bs4 import BeautifulSoup
-from helperfunctions import clean_and_strip, insert_to_file, download_handler, download_helper
+from helperfunctions import clean_and_strip, insert_to_file, download_handler, download_helper, open_file
 from helperfunctions import driver, mangakakalotBase
 
 
@@ -113,8 +113,9 @@ def get_genre_status(link):
 
 def get_chapter_list_mk(manga_idx):
     chapter_list = []
-    with open("mangaData.json", "r") as f:
-        data = json.load(f)
+    data = open_file("get_chapter_list_mk")
+    if data == -1 or data == None:
+        raise Exception("Data is empty or not found")
     manga_source = data[manga_idx]["link"]
     driver.get(manga_source)
     if "chapmanganato" in manga_source:

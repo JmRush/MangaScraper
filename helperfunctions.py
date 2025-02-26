@@ -17,32 +17,65 @@ headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, 
 
 BASE_DLPATH = "D:/MANGA STORAGE"
 
-
+def open_file(function_name):
+    try:
+        with open("mangaData.json", "r") as outfile:
+            data = json.load(outfile)
+    except FileNotFoundError:
+        print("File not found, error in" + function_name)
+        return -1
+    except json.decoder.JSONDecodeError:
+        print("Error decoding JSON, error in " + function_name)
+        return -1
+    except PermissionError:
+        print("Permission denied, error in " + function_name)
+        return -1
+    except Exception as e:
+        print("Unexpeced Error in opening or editing data file at: " + function_name  + " " + str(e))
+        return -1 
+    #end file handling
+    return data
 
 def insert_to_file(new_entry):
-    # managed json file
-    print(new_entry)
-    with open('mangaData.json', "r") as outfile:
-        data = json.load(outfile)
-    data.append(new_entry)
-    with open('mangaData.json', "w") as outfile:
-        json.dump(data, outfile, indent=4)
+    try:
+        with open('mangaData.json', "r") as outfile:
+            data = json.load(outfile)
+        data.append(new_entry)
+        with open('mangaData.json', "w") as outfile:
+            json.dump(data, outfile, indent=4)
+    except FileNotFoundError:
+        print("File not found, error in insert_to_file()")
+    except json.decoder.JSONDecodeError:
+        print("Error decoding JSON, error in insert_to_file()")
+    except PermissionError:
+        print("Permission denied, error in insert_to_file()")
+    except Exception as e:
+        print("Unexpeced Error in opening or editing data file at: insert_to_file(): " + str(e))
 
 def download_helper(source):
     found_list_idx = []
     selected = input("Hello! Select a manga from your list to scrape: ")
-    with open("mangaData.json", "r") as outfile:
-        data = json.load(outfile)
+    data = open_file("download_helper")
+    if data == -1 or data == None:
+        raise Exception("Data is empty or not found")
     for i in range(len(data)):
         if (selected in data[i]['title'] or selected.capitalize() in data[i]["title"]):
-            print("FOUND MATCH")
             if data[i]["source"] == source:
-                print("FOUND MATCH AND SOURCE")
+                print("FOUND TITLE MATCH AND SOURCE")
                 found_list_idx.append(i)
+            else:
+                print("FOUND TITLE MATCH BUT NOT SOURCE")
+                return
     if len(found_list_idx) != 0:
         for i in range(len(found_list_idx)):
             print(str(i+1) + ": " + data[found_list_idx[i]]["title"])
         selected_manga_idx = input("Select a manga from your searched items: ")
+        if(selected_manga_idx == "0"):
+            print("Exiting download handler")
+            return
+        elif (int(selected_manga_idx) > len(found_list_idx)-1):
+            print("Error, item not found in your list with the selected source")
+            return
         realIdx = found_list_idx[int(selected_manga_idx)-1]
         return realIdx
     else:
@@ -55,8 +88,9 @@ def clean_and_strip(item):
 
 
 def download_handler(chapter_list, manga_idx):
-    with open("mangaData.json", "r") as f:
-        data = json.load(f)
+    data = open_file("download_handler")
+    if data == -1 or data == None:
+        raise Exception("Data is empty or not found")
     download_start_idx = -1
     if data[manga_idx]['lastRipped'] == -1:
         download_start_idx = len(chapter_list)-1
@@ -186,7 +220,6 @@ def rip_manga_mk(page, data, manga_idx):
         if (img.has_attr('title') and img):
             img_src = img.get('src')
             chapter_images.append(img_src)
-    print(chapter_images)
     image_count = 0
     for image_url in chapter_images:
         referer = ""
@@ -196,8 +229,7 @@ def rip_manga_mk(page, data, manga_idx):
             referer = "https://chapmanganato.to/"
         elif "mangakakalot" in data[manga_idx]['link']:
             referer = "https://mangakakalot.com/"
-        response = requests.get(image_url, headers={
-                                'UserAgent': headers, 'referer': referer})
+        response = requests.get(image_url, headers={'UserAgent': headers, 'referer': referer})
         if (response.status_code != 200):
             print("Error getting the current file")
             return False
