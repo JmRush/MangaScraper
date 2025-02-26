@@ -1,11 +1,7 @@
 import json
-import pathlib
-import requests
 from bs4 import BeautifulSoup
-import time
-from random import randint
 from helperfunctions import clean_and_strip, insert_to_file, download_handler, download_helper
-from mangaScrape import BASE_DLPATH, driver, weebCentralBase, mangakakalotBase, headers
+from helperfunctions import driver, mangakakalotBase
 
 
 
@@ -143,62 +139,3 @@ def get_chapter_list_mk(manga_idx):
     download_handler(chapter_list, manga_idx)
 
 
-def rip_manga_mk(page, data, manga_idx):
-    chapter_images = []
-    search_url = page
-    driver.get(search_url)
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    image_container = soup.find('div', class_="container-chapter-reader")
-    chapter_folder = ""
-    # chapter folder creations
-    if "chapmanganato" in data[manga_idx]['link']:
-        chapter_selection = soup.find("select", class_="navi-change-chapter")
-        chapter_selection = chapter_selection.find("option", selected=True)
-        chapter_selection = clean_and_strip(chapter_selection.text)
-        chapter_folder += chapter_selection
-    elif "mangakakalot" in data[manga_idx]["link"]:
-        chapter_h1 = soup.find("h1", class_="current-chapter")
-        chapter_text = chapter_h1.text
-        chapter_text = chapter_text.split(": ")
-        for splt in chapter_text:
-            if "chapter" in splt or "Chapter" in splt:
-                chapter_text = clean_and_strip(splt)
-                break
-        chapter_folder += chapter_text
-    if '-' not in chapter_folder:
-        chapter_folder = "S0 - " + chapter_folder
-    try:
-        pathlib.Path(BASE_DLPATH + "/" + data[manga_idx]['title'] +
-                     "/" + chapter_folder).mkdir(parents=True, exist_ok=False)
-    except FileExistsError:
-        return False
-    # grabbing image from chapter
-    all_images = image_container.findAll('img')
-    for img in all_images:
-        if (img.has_attr('title') and img):
-            img_src = img.get('src')
-            chapter_images.append(img_src)
-    print(chapter_images)
-    image_count = 0
-    for image_url in chapter_images:
-        referer = ""
-        fileName = image_url.split('/')
-        fileName = fileName[len(fileName)-1]
-        if "chapmanganato" in data[manga_idx]['link']:
-            referer = "https://chapmanganato.to/"
-        elif "mangakakalot" in data[manga_idx]['link']:
-            referer = "https://mangakakalot.com/"
-        response = requests.get(image_url, headers={
-                                'UserAgent': headers, 'referer': referer})
-        if (response.status_code != 200):
-            print("Error getting the current file")
-            return False
-        else:
-            print("Woooo we have our images")
-            with open(BASE_DLPATH + "/" + data[manga_idx]['title'] + "/" + chapter_folder + '/' + fileName, 'wb') as f:
-                noop = f.write(response.content)
-                print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +
-                      "/" + chapter_folder + '/' + fileName))
-        image_count += 1
-        if image_count % 10 == 0:
-            time.sleep(randint(9, 15))

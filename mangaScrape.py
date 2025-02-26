@@ -1,18 +1,6 @@
 import json
-from selenium import webdriver
-from selenium.webdriver import ChromeOptions
 from weebcentral import search_manga_ms, download_manga_ms
 from mangakakalot import search_manga_mk, download_manga_mk
-
-options = ChromeOptions()
-options.add_argument("--headless=new")
-options.add_argument("--log-level=3")
-driver = webdriver.Chrome(options=options)
-weebCentralBase = "https://weebcentral.com"
-mangakakalotBase = "https://mangakakalot.com"
-headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.3"
-
-BASE_DLPATH = "D:/MANGA STORAGE"
 
 def view_manga():
     with open("mangaData.json", "r") as f:

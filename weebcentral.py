@@ -1,6 +1,4 @@
 import json
-import pathlib
-import requests
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 import time
@@ -8,7 +6,7 @@ from random import randint
 from datetime import date
 from urllib.parse import quote
 from helperfunctions import insert_to_file, download_handler, download_helper, clean_and_strip
-from mangaScrape import BASE_DLPATH, driver, weebCentralBase,  headers
+from helperfunctions import BASE_DLPATH, driver, weebCentralBase,  headers
 
 def search_manga_ms():
     not_found = False
@@ -135,42 +133,3 @@ def get_chapter_list_ms(manga_idx):
     for i in range(len(anchor_tags)):
         chapter_list.append(anchor_tags[i]['href'])#.replace("-page-1", ""))
     download_handler(chapter_list, manga_idx)
-
-def rip_manga_ms(page, data, manga_idx):
-    driver.get(page)
-    chapter_images = []
-    time.sleep(2)
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    chapter_folder_wrapper = soup.find("button", "col-span-4 lg:flex-1 btn btn-secondary")
-    chapter_folder = chapter_folder_wrapper.find("span").text
-    chapter_folder = clean_and_strip(chapter_folder)
-    if '-' not in chapter_folder:
-        chapter_folder = 'S0 - ' + chapter_folder
-    image_elements = soup.find_all('img', class_="maw-w-full mx-auto")
-    print(image_elements)
-    try:
-        pathlib.Path(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder).mkdir(parents=True, exist_ok=False)
-    except FileExistsError:
-        return False
-    # make request for each image src :)
-    image_count = 0
-    for img in image_elements:
-        img_src = img.get('src')
-        chapter_images.append(img_src)
-    for image_url in chapter_images:
-        fileName = image_url.split('/')
-        fileName = fileName[len(fileName)-1]
-        response = requests.get(image_url, headers={'UserAgent': headers, 'referer': "https://weebcentral.com/"})
-        if (response.status_code != 200):
-            print("Error getting the current file")
-            return False
-        else:
-            with open(BASE_DLPATH + "/" + data[manga_idx]['title'] +
-                      "/" + chapter_folder + '/' + fileName, 'wb') as f:
-                noop = f.write(response.content)
-                print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +
-                      "/" + chapter_folder + '/' + fileName))
-        image_count += 1
-        if image_count % 10 == 0:
-            time.sleep(randint(9, 15))
-    return True
