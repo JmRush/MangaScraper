@@ -1,10 +1,11 @@
-import json
 from weebcentral import search_manga_ms, download_manga_ms
 from mangakakalot import search_manga_mk, download_manga_mk
+from helperfunctions import open_file
 
 def view_manga():
-    with open("mangaData.json", "r") as f:
-        data = json.load(f)
+    data = open_file("view_manga")
+    if data == None or data == -1:
+        raise Exception("Data is empty or not found")
     item_number = 0
     for item in range(len(data)):
         item_number += 1
