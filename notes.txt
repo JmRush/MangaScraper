@@ -1,5 +1,7 @@
 Bugs:
-	-Sometimes my lastRipped will not update even though im 20+ chapters ahead
-	
+	-Sometimes my lastRipped will not update even though im 20+ chapters ahead 
+	-Above was my mistake for pulling from my second branch causing my data to be reset
+
 Todo:
 	-Add error logging
+	-Create a heartbeat check?
