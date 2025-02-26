@@ -22,7 +22,7 @@ def open_file(function_name):
         with open("mangaData.json", "r") as outfile:
             data = json.load(outfile)
     except FileNotFoundError:
-        print("File not found, error in" + function_name)
+        print("File not found, error in " + function_name)
         return -1
     except json.decoder.JSONDecodeError:
         print("Error decoding JSON, error in " + function_name)

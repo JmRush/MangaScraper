@@ -1,4 +1,3 @@
-import json
 from bs4 import BeautifulSoup
 from helperfunctions import clean_and_strip, insert_to_file, download_handler, download_helper, open_file
 from helperfunctions import driver, mangakakalotBase
