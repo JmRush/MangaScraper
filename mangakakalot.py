@@ -113,7 +113,7 @@ def get_genre_status(link):
 
 def get_chapter_list_mk(manga_idx):
     chapter_list = []
-    data = open_file()
+    data = open_file("get_chapter_list_mk")
     if data == -1 or data == None:
         raise Exception("Data is empty or not found")
     manga_source = data[manga_idx]["link"]

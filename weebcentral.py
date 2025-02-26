@@ -119,7 +119,7 @@ def download_manga_ms():
 
 def get_chapter_list_ms(manga_idx):
     chapter_list = []
-    data = open_file()
+    data = open_file("get_chapter_list_ms")
     if data == -1 or data == None:
         raise Exception("Data is empty or not found")
     driver.get(data[manga_idx]["link"])

@@ -17,21 +17,21 @@ headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, 
 
 BASE_DLPATH = "D:/MANGA STORAGE"
 
-def open_file():
+def open_file(function_name):
     try:
         with open("mangaData.json", "r") as outfile:
             data = json.load(outfile)
     except FileNotFoundError:
-        print("File not found, error in download_helper()")
+        print("File not found, error in" + function_name)
         return -1
     except json.decoder.JSONDecodeError:
-        print("Error decoding JSON, error in download_helper()")
+        print("Error decoding JSON, error in " + function_name)
         return -1
     except PermissionError:
-        print("Permission denied, error in download_helper()")
+        print("Permission denied, error in " + function_name)
         return -1
     except Exception as e:
-        print("Unexpeced Error in opening or editing data file at: download_helper(): " + str(e))
+        print("Unexpeced Error in opening or editing data file at: " + function_name  + " " + str(e))
         return -1 
     #end file handling
     return data
@@ -55,7 +55,7 @@ def insert_to_file(new_entry):
 def download_helper(source):
     found_list_idx = []
     selected = input("Hello! Select a manga from your list to scrape: ")
-    data = open_file()
+    data = open_file("download_helper")
     if data == -1 or data == None:
         raise Exception("Data is empty or not found")
     for i in range(len(data)):
@@ -88,7 +88,7 @@ def clean_and_strip(item):
 
 
 def download_handler(chapter_list, manga_idx):
-    data = open_file()
+    data = open_file("download_handler")
     if data == -1 or data == None:
         raise Exception("Data is empty or not found")
     download_start_idx = -1
