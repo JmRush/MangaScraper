@@ -1,36 +1,5 @@
-Goals:
-MANGASEE WILL HAVE A COMPLETE REWRITE... SO THIS MIGHT BREAK AT ANY MOMENT 
-					COMPLETE:
-					-Kavita requires a volume description of the parent folder of the images
-						- certain manga will already have said delineation, while others dont
-						- (ex. Tower of god has seasons which count, chainsaw man does not)
-						- How do I determine if the manga already has some type of volume delineation?
-						- make sure they do have said delineation if they do not
-						- cheap, possibly naieve solution would be to check if the "Chapter" item that was scraped had some sort of hyphen in it, if it does, we can assume a delineation for volumes or seasons, if not we add one?
-					-Search for both sources are complete for now
-					DONE - the naieve solution seems to be working for now, so I will keep it as is.
-		
-
--PLEASE FOR THE LOVE OF GOD DO MORE ERROR CHECKING AND DATA VALIDATION
-
--Add support for other sources (mangakalot - something that I required from my previous tachiyomi library), I wonder if this would require a rewrite...
-Thoughts on implementation:
-	Sites will both have different grab points for data, elements/css attributes/data attributes on elements
-	Either have the user select the source, then search for the reading material OR search both websites and present the results to the user for them to choose
-	Split mangasee123.com implementation and mangakalot implementation into their own handlers, helpers, methods to be used when we want something from either Sites
-
--Update manga will update mangaData.json data
-	- user will select update data and we can update manga entries that haven't been updated in x period of time
-	- check if new information is different from previous information
-
-Fix required for genre reading portion on mangasee, sometimes reading in author or distrubtor as a genre
-
-
--Automatically move the scraped files to my nas under the reader's (Kavita's) shared folders
-	-Check Manga Folder on D: drive, if folders exist, verify they have data in them
-	- Migrate to either new or existing folder
-	-Delete folders after move is sucessful
-
--Finally ensure we don't get blocked or overload their CDN or website by adding more appropriate checks and delays
-	-So far so good I've been enjoying reading all my new manga/manhwa/comics :D
-	Then I can enjoy my new full Kavita library with my own stored manga/manhwa/comics, maybe even setup a reverse proxy for out-network viewing for when I leave the house
+Bugs:
+	-Sometimes my lastRipped will not update even though im 20+ chapters ahead
+	
+Todo:
+	-Add error logging
