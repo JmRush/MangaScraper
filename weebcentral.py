@@ -2,11 +2,10 @@ import json
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 import time
-from random import randint
 from datetime import date
 from urllib.parse import quote
-from helperfunctions import insert_to_file, download_handler, download_helper, clean_and_strip
-from helperfunctions import BASE_DLPATH, driver, weebCentralBase,  headers
+from helperfunctions import insert_to_file, download_handler, download_helper, clean_and_strip, open_file
+from helperfunctions import driver, weebCentralBase
 
 def search_manga_ms():
     not_found = False
@@ -120,8 +119,9 @@ def download_manga_ms():
 
 def get_chapter_list_ms(manga_idx):
     chapter_list = []
-    with open("mangaData.json", "r") as f:
-        data = json.load(f)
+    data = open_file()
+    if data == -1 or data == None:
+        raise Exception("Data is empty or not found")
     driver.get(data[manga_idx]["link"])
     expand_button = driver.find_element(By.ID, "chapter-list")
     expand_button = expand_button.find_element(By.TAG_NAME, "button")
