@@ -596,5 +596,23 @@
         "link": "https://mangakakalot.com/manga/um942432",
         "source": "https://mangakakalot.com",
         "lastRipped": -1
+    },
+    {
+        "author": "Jo YongSeuk",
+        "released": "2013",
+        "status": "Ongoing",
+        "lastChapter": -1,
+        "lastUpdated": "02-18-2025",
+        "translation": "Official Translation",
+        "title": "Wind Breaker",
+        "genres": [
+            "Action",
+            "Drama",
+            "Sports"
+        ],
+        "type": "Manhwa",
+        "link": "https://weebcentral.com/series/01J76XYA1TQYKV6W4BCMR2WD5M/Wind-Breaker",
+        "source": "https://weebcentral.com",
+        "lastRipped": -1
     }
 ]
