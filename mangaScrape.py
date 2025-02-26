@@ -1,12 +1,6 @@
 import json
-import pathlib
-import requests
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
-from bs4 import BeautifulSoup
-from selenium.webdriver.common.by import By
-from datetime import date
-from urllib.parse import quote
 from weebcentral import search_manga_ms, download_manga_ms
 from mangakakalot import search_manga_mk, download_manga_mk
 

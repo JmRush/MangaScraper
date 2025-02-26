@@ -1,10 +1,7 @@
 import json
 import pathlib
 import requests
-from selenium import webdriver
-from selenium.webdriver import ChromeOptions
 from bs4 import BeautifulSoup
-from selenium.webdriver.common.by import By
 import time
 from random import randint
 from helperfunctions import clean_and_strip, insert_to_file, download_handler, download_helper
