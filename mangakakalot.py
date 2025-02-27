@@ -1,5 +1,7 @@
+import time
+from datetime import datetime
 from bs4 import BeautifulSoup
-from helperfunctions import clean_and_strip, insert_to_file, download_handler, download_helper, open_file
+from helperfunctions import clean_and_strip, insert_to_file, download_handler, download_helper, open_file, update_file
 from helperfunctions import driver, mangakakalotBase
 
 
@@ -138,7 +140,36 @@ def get_chapter_list_mk(manga_idx):
     download_handler(chapter_list, manga_idx)
 
 def update_manga_data_mk(manga_idx, data):
-    # take link from data and find the source
     # we want to update latestChapter, lastUpdated, status, which will have to be done depending on the domain
-    pass
+    link = data[manga_idx]["link"]
+    driver.get(link)
+    time.sleep(2)
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    if (mangakakalotBase in link):
+        # manga-info-text
+        top_wrapper = soup.find("ul", "manga-info-text")
+        data_points = top_wrapper.findAll("li")
+        status = -1
+        last_updated = -1
+        latest_chapter = -1
+        for point in data_points:
+            if "Status" in point.text:
+                status = clean_and_strip(point.text.split(":")[1])
+            if "Last updated" in point.text:
+                last_updated = clean_and_strip(clean_and_strip(point.text.split(":")[1]).split(" ")[0])
+                print(last_updated)
+                last_updated = datetime.strptime(last_updated, '%b-%d-%Y').strftime('%m-%d-%Y')
+        chapter_wrapper = soup.find("div", "chapter-list")
+        latest_chapter = chapter_wrapper.find("a").text 
+        if(chapter_wrapper != -1 and latest_chapter != -1  and status != -1):
+            data[manga_idx]["lastUpdated"] = last_updated
+            data[manga_idx]["lastChapter"] = latest_chapter
+            data[manga_idx]["status"] = status
+            update_file(data)
+        else:
+            raise Exception("Unable to find time updated, status or latest chapter")
+    if ("chapmanganato" in link):
+        top_wrapper = soup.find("div", "story-info-right")
+        # story-info-right
+        pass
 
