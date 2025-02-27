@@ -37,11 +37,10 @@ def search_manga_mk():
                 selected_manga)-1].find('div', class_="story_item_right")
             story_latest_chapter = story_item_right.find(
                 'em', class_="story_chapter").text
-            story_latest_chapter = clean_and_strip(story_latest_chapter)
+            story_latest_chapter = clean_and_strip(story_latest_chapter).split("")[1]
             story_data = story_item_right.findAll("span")
             story_author = clean_and_strip(story_data[0].text.split(':')[1])
-            story_last_updated = clean_and_strip(
-                story_data[1].text.split(':')[1])
+            story_last_updated = clean_and_strip(story_data[1].text.split(':')[1])
             genres, status = get_genre_status(story_link)
             mk_entry = {
                 "author": story_author,
@@ -138,4 +137,8 @@ def get_chapter_list_mk(manga_idx):
             chapter_list.append(link)
     download_handler(chapter_list, manga_idx)
 
+def update_manga_data_mk(manga_idx, data):
+    # take link from data and find the source
+    # we want to update latestChapter, lastUpdated, status, which will have to be done depending on the domain
+    pass
 
