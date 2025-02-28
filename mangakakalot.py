@@ -169,7 +169,22 @@ def update_manga_data_mk(manga_idx, data):
         else:
             raise Exception("Unable to find time updated, status or latest chapter")
     if ("chapmanganato" in link):
-        top_wrapper = soup.find("div", "story-info-right")
-        # story-info-right
-        pass
+        status_wrapper = soup.find("i", "info-status").parent.parent
+        last_updated_wrapper = soup.find("i", "info-time").parent.parent
+        latest_chapter_wrapper = soup.find("ul", "row-content-chapter")
+        status = status_wrapper.find("td", "table-value")
+        last_updated = last_updated_wrapper.find("span", "stre-value")
+        latest_chapter = latest_chapter_wrapper.find("a", "chapter-name text-nowrap")
+        if(status and last_updated and latest_chapter):
+            status = status.text
+            last_updated = last_updated.text
+            latest_chapter = latest_chapter.text
+            data[manga_idx]["status"] = status
+            data[manga_idx]["lastUpdated"] = latest_chapter
+            #process date to be in the format of mm-dd-yyyy
+            last_updated = clean_and_strip(last_updated.split("-")[0])
+            last_updated = datetime.strptime(last_updated, '%b %d,%Y').strftime('%m-%d-%Y')
+            data[manga_idx]["lastUpdated"] = last_updated
+        else:
+            raise Exception("Unable to find time updated, status or latest chapter")
 
