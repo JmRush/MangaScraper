@@ -1,6 +1,6 @@
-from weebcentral import search_manga_ms, download_manga_ms
-from mangakakalot import search_manga_mk, download_manga_mk
-from helperfunctions import open_file
+from weebcentral import search_manga_ms, download_manga_ms, update_manga_data_wc
+from mangakakalot import search_manga_mk, download_manga_mk, update_manga_data_mk
+from helperfunctions import open_file, weebCentralBase, mangakakalotBase
 
 def view_manga():
     data = open_file("view_manga")
@@ -26,6 +26,26 @@ def view_manga_data():
     print(data[selected_manga]['lastRipped'])
     print("-------------------------------")
 
+def update_manga_data():
+    view_manga()
+    data = open_file("update_manga_data")
+    if data == None or data == -1:
+        raise Exception("Data is empty or not found")
+    selected_manga = input("Select a manga to update: ")
+    selected_manga = int(selected_manga) - 1
+    if(selected_manga < 0 or selected_manga >= len(data)):
+        raise Exception("Invalid manga selected")
+    print("Here is some information on the manga you selected: ")
+    print("-------------------------------")
+    print(data[selected_manga]['title'])
+    print(data[selected_manga]['source'])
+    print(data[selected_manga]['lastRipped'])
+    if(data[selected_manga]["source"] == weebCentralBase):
+        update_manga_data_wc(selected_manga, data)
+    elif(data[selected_manga]["source"] == mangakakalotBase):
+        update_manga_data_mk(selected_manga, data)
+
+
 
 def main():
     print("Hello, welcome and select your required operation")
@@ -46,7 +66,7 @@ def main():
         case "3":
             search_manga_mk()
         case "4":
-            pass
+            update_manga_data()
         case "5":
             download_manga_ms()
         case "6":

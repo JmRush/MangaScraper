@@ -1,9 +1,9 @@
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 import time
-from datetime import date
+from datetime import datetime, date
 from urllib.parse import quote
-from helperfunctions import insert_to_file, download_handler, download_helper, clean_and_strip, open_file
+from helperfunctions import insert_to_file, download_handler, download_helper, clean_and_strip, open_file, update_file
 from helperfunctions import driver, weebCentralBase
 
 def search_manga_ms():
@@ -132,3 +132,39 @@ def get_chapter_list_ms(manga_idx):
     for i in range(len(anchor_tags)):
         chapter_list.append(anchor_tags[i]['href'])#.replace("-page-1", ""))
     download_handler(chapter_list, manga_idx)
+
+def update_manga_data_wc(manga_idx, data):
+    page = data[manga_idx]["link"]
+    driver.get(page)
+    time.sleep(2)
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    # we want to update latestChapter, lastUpdated, status
+    chapter_wrapper = soup.find(id="chapter-list")
+    latest_chapter = chapter_wrapper.find('a', class_="hover:bg-base-300 flex-1 flex items-center p-2")
+    latest_time = latest_chapter.find('time', "opacity-50")["datetime"]
+    latest_time = datetime.strptime(latest_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+    latest_time = latest_time.strftime("%m-%d-%Y")
+    latest_chapter = latest_chapter.find("span", "grow flex items-center gap-2").find("span").text
+    data_wrapper = soup.findAll("ul", "flex flex-col gap-4")[0]
+    data_wrapper = data_wrapper.findAll("a", "link link-info link-hover")
+    status = -1
+    for datum in data_wrapper:
+        print(datum.text)
+        if "Ongoing" in datum.text:
+            status = "Ongoing"
+        elif "Completed" in datum.text:
+            status = "Completed"
+        elif "Hiatus" in datum.text:
+            status = "Hiatus"
+        elif "Canceled" in datum.text:
+            status = "Canceled"
+    if(latest_time and latest_chapter and status != -1):
+        print("Latest chapter: " + latest_chapter)
+        print("Last updated: " + latest_time)
+        print("Status: " + status)
+        data[manga_idx]["lastChapter"] = latest_chapter
+        data[manga_idx]["lastUpdated"] = latest_time
+        data[manga_idx]["status"] = status
+        update_file(data)
+    else:
+        raise Exception("Latest chapter, time, or status is not found")

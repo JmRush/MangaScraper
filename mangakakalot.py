@@ -1,5 +1,7 @@
+import time
+from datetime import datetime
 from bs4 import BeautifulSoup
-from helperfunctions import clean_and_strip, insert_to_file, download_handler, download_helper, open_file
+from helperfunctions import clean_and_strip, insert_to_file, download_handler, download_helper, open_file, update_file
 from helperfunctions import driver, mangakakalotBase
 
 
@@ -37,11 +39,10 @@ def search_manga_mk():
                 selected_manga)-1].find('div', class_="story_item_right")
             story_latest_chapter = story_item_right.find(
                 'em', class_="story_chapter").text
-            story_latest_chapter = clean_and_strip(story_latest_chapter)
+            story_latest_chapter = clean_and_strip(story_latest_chapter).split("")[1]
             story_data = story_item_right.findAll("span")
             story_author = clean_and_strip(story_data[0].text.split(':')[1])
-            story_last_updated = clean_and_strip(
-                story_data[1].text.split(':')[1])
+            story_last_updated = clean_and_strip(story_data[1].text.split(':')[1])
             genres, status = get_genre_status(story_link)
             mk_entry = {
                 "author": story_author,
@@ -138,4 +139,52 @@ def get_chapter_list_mk(manga_idx):
             chapter_list.append(link)
     download_handler(chapter_list, manga_idx)
 
+def update_manga_data_mk(manga_idx, data):
+    # we want to update latestChapter, lastUpdated, status, which will have to be done depending on the domain
+    link = data[manga_idx]["link"]
+    driver.get(link)
+    time.sleep(2)
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    if (mangakakalotBase in link):
+        # manga-info-text
+        top_wrapper = soup.find("ul", "manga-info-text")
+        data_points = top_wrapper.findAll("li")
+        status = -1
+        last_updated = -1
+        latest_chapter = -1
+        for point in data_points:
+            if "Status" in point.text:
+                status = clean_and_strip(point.text.split(":")[1])
+            if "Last updated" in point.text:
+                last_updated = clean_and_strip(clean_and_strip(point.text.split(":")[1]).split(" ")[0])
+                print(last_updated)
+                last_updated = datetime.strptime(last_updated, '%b-%d-%Y').strftime('%m-%d-%Y')
+        chapter_wrapper = soup.find("div", "chapter-list")
+        latest_chapter = chapter_wrapper.find("a").text 
+        if(chapter_wrapper != -1 and latest_chapter != -1  and status != -1):
+            data[manga_idx]["lastUpdated"] = last_updated
+            data[manga_idx]["lastChapter"] = latest_chapter
+            data[manga_idx]["status"] = status
+            update_file(data)
+        else:
+            raise Exception("Unable to find time updated, status or latest chapter")
+    if ("chapmanganato" in link):
+        status_wrapper = soup.find("i", "info-status").parent.parent
+        last_updated_wrapper = soup.find("i", "info-time").parent.parent
+        latest_chapter_wrapper = soup.find("ul", "row-content-chapter")
+        status = status_wrapper.find("td", "table-value")
+        last_updated = last_updated_wrapper.find("span", "stre-value")
+        latest_chapter = latest_chapter_wrapper.find("a", "chapter-name text-nowrap")
+        if(status and last_updated and latest_chapter):
+            status = status.text
+            last_updated = last_updated.text
+            latest_chapter = latest_chapter.text
+            data[manga_idx]["status"] = status
+            data[manga_idx]["lastUpdated"] = latest_chapter
+            #process date to be in the format of mm-dd-yyyy
+            last_updated = clean_and_strip(last_updated.split("-")[0])
+            last_updated = datetime.strptime(last_updated, '%b %d,%Y').strftime('%m-%d-%Y')
+            data[manga_idx]["lastUpdated"] = last_updated
+        else:
+            raise Exception("Unable to find time updated, status or latest chapter")
 

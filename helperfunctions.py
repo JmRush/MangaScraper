@@ -52,6 +52,19 @@ def insert_to_file(new_entry):
     except Exception as e:
         print("Unexpeced Error in opening or editing data file at: insert_to_file(): " + str(e))
 
+def update_file(data):
+    try:
+        with open('mangaData.json', "w") as outfile:
+            json.dump(data, outfile, indent=4)
+    except FileNotFoundError:
+        print("File not found, error in update_file()")
+    except json.decoder.JSONDecodeError:
+        print("Error decoding JSON, error in update_file()")
+    except PermissionError:
+        print("Permission denied, error in update_file()")
+    except Exception as e:
+        print("Unexpeced Error in opening or editing data file at: update_file(): " + str(e))
+
 def download_helper(source):
     found_list_idx = []
     selected = input("Hello! Select a manga from your list to scrape: ")
@@ -157,7 +170,6 @@ def rip_manga_ms(page, data, manga_idx):
     if '-' not in chapter_folder:
         chapter_folder = 'S0 - ' + chapter_folder
     image_elements = soup.find_all('img', class_="maw-w-full mx-auto")
-    print(image_elements)
     try:
         pathlib.Path(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder).mkdir(parents=True, exist_ok=False)
     except FileExistsError:
