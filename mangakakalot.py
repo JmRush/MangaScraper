@@ -180,11 +180,12 @@ def update_manga_data_mk(manga_idx, data):
             last_updated = last_updated.text
             latest_chapter = latest_chapter.text
             data[manga_idx]["status"] = status
-            data[manga_idx]["lastUpdated"] = latest_chapter
+            data[manga_idx]["lastChapter"] = latest_chapter
             #process date to be in the format of mm-dd-yyyy
             last_updated = clean_and_strip(last_updated.split("-")[0])
             last_updated = datetime.strptime(last_updated, '%b %d,%Y').strftime('%m-%d-%Y')
             data[manga_idx]["lastUpdated"] = last_updated
+            update_file(data)
         else:
             raise Exception("Unable to find time updated, status or latest chapter")
 

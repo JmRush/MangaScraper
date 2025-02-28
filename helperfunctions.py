@@ -64,6 +64,7 @@ def update_file(data):
         print("Permission denied, error in update_file()")
     except Exception as e:
         print("Unexpeced Error in opening or editing data file at: update_file(): " + str(e))
+    print("File updated and saved successfully")
 
 def download_helper(source):
     found_list_idx = []
