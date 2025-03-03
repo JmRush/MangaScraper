@@ -149,7 +149,6 @@ def update_manga_data_wc(manga_idx, data):
     data_wrapper = data_wrapper.findAll("a", "link link-info link-hover")
     status = -1
     for datum in data_wrapper:
-        print(datum.text)
         if "Ongoing" in datum.text:
             status = "Ongoing"
         elif "Completed" in datum.text:
