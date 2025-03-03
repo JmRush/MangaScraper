@@ -87,13 +87,13 @@ def download_helper(source):
         if(selected_manga_idx == "0"):
             print("Exiting download handler")
             return
-        elif (int(selected_manga_idx) > len(found_list_idx)-1):
+        elif (int(selected_manga_idx)-1 > len(found_list_idx)-1):
             print("Error, item not found in your list with the selected source")
             return
         realIdx = found_list_idx[int(selected_manga_idx)-1]
         return realIdx
     else:
-        print("Error, Item was not found in your list with the selected source ")
+        print("Error, Item was not found in your list with the selected source: returning -1")
         return -1
 
 def clean_and_strip(item):
@@ -184,15 +184,13 @@ def rip_manga_ms(page, data, manga_idx):
         fileName = image_url.split('/')
         fileName = fileName[len(fileName)-1]
         response = requests.get(image_url, headers={'UserAgent': headers, 'referer': "https://weebcentral.com/"})
-        if (response.status_code != 200):
+        if (response.status_code != 200 or response.headers['Content-Type'].startswith('image/') == False):
             print("Error getting the current file")
             return False
         else:
-            with open(BASE_DLPATH + "/" + data[manga_idx]['title'] +
-                      "/" + chapter_folder + '/' + fileName, 'wb') as f:
+            with open(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName, 'wb') as f:
                 noop = f.write(response.content)
-                print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +
-                      "/" + chapter_folder + '/' + fileName))
+                print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName))
         image_count += 1
         if image_count % 10 == 0:
             time.sleep(randint(9, 15))
@@ -243,15 +241,14 @@ def rip_manga_mk(page, data, manga_idx):
         elif "mangakakalot" in data[manga_idx]['link']:
             referer = "https://mangakakalot.com/"
         response = requests.get(image_url, headers={'UserAgent': headers, 'referer': referer})
-        if (response.status_code != 200):
+        if (response.status_code != 200 or response.headers['Content-Type'].startswith('image/') == False):
             print("Error getting the current file")
             return False
         else:
             print("Woooo we have our images")
             with open(BASE_DLPATH + "/" + data[manga_idx]['title'] + "/" + chapter_folder + '/' + fileName, 'wb') as f:
                 noop = f.write(response.content)
-                print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +
-                      "/" + chapter_folder + '/' + fileName))
+                print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName))
         image_count += 1
         if image_count % 10 == 0:
             time.sleep(randint(9, 15))
