@@ -199,9 +199,9 @@ def rip_manga_ms(page, data, manga_idx):
         else:
             with open(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName, 'wb') as f:
                 noop = f.write(response.content)
-                print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName))
         image_count += 1
         if image_count % 10 == 0:
+            print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName))
             time.sleep(randint(9, 15))
     return True
 
