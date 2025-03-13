@@ -50,10 +50,10 @@ def update_manga_data():
 def main():
     print("Hello, welcome and select your required operation")
     print("1. View manga list")
-    print("2. Search/Select Manga - Mangasee")
+    print("2. Search/Select Manga - Weebcentral")
     print("3. Search/Select Manga - Mangakakalot")
     print("4. Update Manga data")
-    print("5. Download Manga - Mangasee")
+    print("5. Download Manga - Weebcentral")
     print("6. Download Manga - Mangakakalot")
 
     selection = input()
