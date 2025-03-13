@@ -5,15 +5,16 @@ from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 import pathlib
 import requests
+from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 options = ChromeOptions()
-options.add_argument("--headless=new")
+#options.add_argument("--headless=new")
 options.add_argument("--log-level=3")
 driver = webdriver.Chrome(options=options)
 weebCentralBase = "https://weebcentral.com"
 mangakakalotBase = "https://mangakakalot.com"
-headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.3"
+headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
 
 BASE_DLPATH = "D:/MANGA STORAGE"
 
@@ -128,8 +129,7 @@ def download_handler(chapter_list, manga_idx):
             if (default_pages == 0):
                 break
             if rip_manga_ms(chapter_list[i], data, manga_idx) != True:
-                raise Exception(
-                    "Error downloading the content requested: Mangasee")
+                raise Exception("Error downloading the content requested: Weebcentral")
             else:
                 print("Update the data with the latest lastRipped")
                 data[manga_idx]['lastRipped'] = chapter_list[i]
@@ -170,21 +170,31 @@ def rip_manga_ms(page, data, manga_idx):
     chapter_folder = clean_and_strip(chapter_folder)
     if '-' not in chapter_folder:
         chapter_folder = 'S0 - ' + chapter_folder
+    time.sleep(2)
     image_elements = soup.find_all('img', class_="maw-w-full mx-auto")
     try:
         pathlib.Path(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder).mkdir(parents=True, exist_ok=False)
     except FileExistsError:
+        print("File already exists, exiting")
         return False
     # make request for each image src :)
     image_count = 0
     for img in image_elements:
         img_src = img.get('src')
         chapter_images.append(img_src)
+    print(chapter_images)
     for image_url in chapter_images:
         fileName = image_url.split('/')
         fileName = fileName[len(fileName)-1]
-        response = requests.get(image_url, headers={'UserAgent': headers, 'referer': "https://weebcentral.com/"})
-        if (response.status_code != 200 or response.headers['Content-Type'].startswith('image/') == False):
+        img_type = image_url.split('.')
+        img_type = img_type[len(img_type)-1]
+        host = urlparse(image_url).netloc
+        if img_type != "jpg" and img_type != "png" and img_type != "jpeg":
+            print("Error, image type is not supported exiting")
+            return False
+        response = requests.get(image_url, headers={"Host": host,'User-Agent': headers, 'Referer': "https://weebcentral.com/", 'Sec-Ch-Ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"'})
+        print(response)
+        if (response.status_code != 200):
             print("Error getting the current file")
             return False
         else:
@@ -240,7 +250,7 @@ def rip_manga_mk(page, data, manga_idx):
             referer = "https://chapmanganato.to/"
         elif "mangakakalot" in data[manga_idx]['link']:
             referer = "https://mangakakalot.com/"
-        response = requests.get(image_url, headers={'UserAgent': headers, 'referer': referer})
+        response = requests.get(image_url, headers={'User-Agent': headers, 'Referer': referer})
         if (response.status_code != 200 or response.headers['Content-Type'].startswith('image/') == False):
             print("Error getting the current file")
             return False
