@@ -193,7 +193,6 @@ def rip_manga_ms(page, data, manga_idx):
             print("Error, image type is not supported exiting")
             return False
         response = requests.get(image_url, headers={"Host": host,'User-Agent': headers, 'Referer': "https://weebcentral.com/", 'Sec-Ch-Ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"'})
-        print(response)
         if (response.status_code != 200):
             print("Error getting the current file")
             return False
@@ -250,8 +249,13 @@ def rip_manga_mk(page, data, manga_idx):
             referer = "https://chapmanganato.to/"
         elif "mangakakalot" in data[manga_idx]['link']:
             referer = "https://mangakakalot.com/"
+        img_type = image_url.split('.')
+        img_type = img_type[len(img_type)-1]
+        if img_type != "jpg" and img_type != "png" and img_type != "jpeg":
+            print("Error, image type is not supported exiting")
+            return False
         response = requests.get(image_url, headers={'User-Agent': headers, 'Referer': referer})
-        if (response.status_code != 200 or response.headers['Content-Type'].startswith('image/') == False):
+        if (response.status_code != 200):
             print("Error getting the current file")
             return False
         else:
