@@ -41,7 +41,7 @@
         "link": "https://weebcentral.com/series/01J76XYE23859ZWDP7BJ520AKY/The-Beginning-After-The-End",
         "source": "https://weebcentral.com",
         "oldLastRipped": "/read-online/The-Beginning-After-The-End-chapter-188.html",
-        "lastRipped": "https://weebcentral.com/chapters/01JN4ANQNP1K8TB5057J42RJ2S"
+        "lastRipped": "https://weebcentral.com/chapters/01JP83VHGEDSJJKFGRVW2WT3PV"
     },
     {
         "author": "LEE Subaek",
@@ -148,7 +148,7 @@
         "link": "https://weebcentral.com/series/01J76XYFA2SNRMQT60JEWDRZRW/The-World-After-the-Fall",
         "source": "https://weebcentral.com",
         "oldLastRipped": "/read-online/The-World-After-the-Fall-chapter-138.html",
-        "lastRipped": "https://weebcentral.com/chapters/01J97KE4S5G1WH3THTFNZ2CC0X"
+        "lastRipped": "https://weebcentral.com/chapters/01JEV4T4TV33JASRCW5X3J8Q7Z"
     },
     {
         "author": "Nong Nong,  Sa Doyeon",
@@ -533,7 +533,7 @@
         "link": "https://weebcentral.com/series/01J76XYDMWWJX3T4BFWR84FQQK/Omniscient-Readers-Viewpoint",
         "source": "https://weebcentral.com",
         "oldLastRipped": "/read-online/Omniscient-Readers-Viewpoint-chapter-190.html",
-        "lastRipped": "https://weebcentral.com/chapters/01J76XZ8DP7XS11NEJC0VEYFKK"
+        "lastRipped": "https://weebcentral.com/chapters/01J7GH6G3P5R76GHZT6VM41D4G"
     },
     {
         "author": "Swing Bat,  WAN.Z",
@@ -613,6 +613,28 @@
         "type": "",
         "link": "https://mangakakalot.com/manga/um942432",
         "source": "https://mangakakalot.com",
+        "lastRipped": -1
+    },
+    {
+        "author": "FUJIMOTO Tatsuki",
+        "released": "2018",
+        "status": "Ongoing",
+        "lastChapter": -1,
+        "lastUpdated": "03-13-2025",
+        "translation": "Official Translation",
+        "title": "Chainsaw Man",
+        "genres": [
+            "Action",
+            "Comedy",
+            "Drama",
+            "Horror",
+            "Mature",
+            "Shounen",
+            "Supernatural"
+        ],
+        "type": "Manga",
+        "link": "https://weebcentral.com/series/01J76XYCRVY3QGYAMRR3STW941/Chainsaw-Man",
+        "source": "https://weebcentral.com",
         "lastRipped": -1
     }
 ]

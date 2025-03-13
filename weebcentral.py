@@ -34,16 +34,14 @@ def search_manga_ms():
         print(str(list_num) + ". " + manga_results[i].text)
     selected_manga = input("Select a manga from the given list: ")
     if 0 <= int(selected_manga)-1 <= len(manga_results):
-        print("You have selected " +
-              manga_results[int(selected_manga)-1].text + "! ")
+        print("You have selected " +manga_results[int(selected_manga)-1].text + "! ")
         answer = input("Would you like to add this manga to your library? Y/N: ")
         if answer == "Y" or answer == "y":
             selected_manga_title = manga_results[int(selected_manga)-1].text
             print(selected_manga_title)
             print("--------------------")
             # send title and genre seperately than the rest of raw data
-            manga_parent_wrapper = manga_results[int(
-                selected_manga)-1].parent.parent
+            manga_parent_wrapper = manga_results[int(selected_manga)-1].parent.parent.parent
             manga_data_fields = manga_parent_wrapper.findAll("div", "opacity-70")
             manga_genre_tags = []
             for manga in manga_data_fields:
@@ -52,9 +50,7 @@ def search_manga_ms():
                 if "Tag(s):" in header:
                     manga_genre_tags = header_tag.parent.findAll("span")
             print(manga_genre_tags)
-            create_entry_ms(selected_manga_title,
-                            manga_parent_wrapper, manga_genre_tags, manga_results[int(
-                                selected_manga)-1]['href'], weebCentralBase)
+            create_entry_ms(selected_manga_title,manga_parent_wrapper, manga_genre_tags, manga_results[int(selected_manga)-1]['href'], weebCentralBase)
 
         else:
             print("Item not added")
@@ -64,7 +60,9 @@ def search_manga_ms():
 
 def create_entry_ms(selectedTitle, selectedManga, manga_genre_tags, search_url, base_url):
     # check if selected title is saved in file, if not go for it!
+    print(selectedManga)
     raw_manga_data = selectedManga.findAll('div', "opacity-70")
+    print(raw_manga_data)
     cleanData = []
     cleanGenreTags = []
     # loop through this array and get text for author, year, status, latest chapter (and date updated) and genres (AND LINK)
@@ -80,7 +78,11 @@ def create_entry_ms(selectedTitle, selectedManga, manga_genre_tags, search_url, 
         cleanData.append(fullData)
     today = date.today()
     todayF = today.strftime("%m-%d-%Y")
-    author = selectedManga.find("a", "link link-info link-hover").text
+    author = selectedManga.find("a", "link link-info link-hover")
+    if author == None:
+        author = "Unknown"
+    else:
+        author = author.text
     for genreTag in manga_genre_tags:
         tag = clean_and_strip(genreTag.text)
         tag = tag.replace(",", "")
