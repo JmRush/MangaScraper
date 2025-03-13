@@ -182,7 +182,6 @@ def rip_manga_ms(page, data, manga_idx):
     for img in image_elements:
         img_src = img.get('src')
         chapter_images.append(img_src)
-    print(chapter_images)
     for image_url in chapter_images:
         fileName = image_url.split('/')
         fileName = fileName[len(fileName)-1]
@@ -199,9 +198,9 @@ def rip_manga_ms(page, data, manga_idx):
         else:
             with open(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName, 'wb') as f:
                 noop = f.write(response.content)
-                print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName))
         image_count += 1
         if image_count % 10 == 0:
+            print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName))
             time.sleep(randint(9, 15))
     return True
 
@@ -262,7 +261,7 @@ def rip_manga_mk(page, data, manga_idx):
             print("Woooo we have our images")
             with open(BASE_DLPATH + "/" + data[manga_idx]['title'] + "/" + chapter_folder + '/' + fileName, 'wb') as f:
                 noop = f.write(response.content)
-                print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName))
         image_count += 1
         if image_count % 10 == 0:
+            print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName))
             time.sleep(randint(9, 15))
