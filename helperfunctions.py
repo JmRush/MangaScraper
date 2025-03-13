@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 options = ChromeOptions()
-#options.add_argument("--headless=new")
+options.add_argument("--headless=new")
 options.add_argument("--log-level=3")
 driver = webdriver.Chrome(options=options)
 weebCentralBase = "https://weebcentral.com"
