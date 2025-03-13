@@ -182,7 +182,6 @@ def rip_manga_ms(page, data, manga_idx):
     for img in image_elements:
         img_src = img.get('src')
         chapter_images.append(img_src)
-    print(chapter_images)
     for image_url in chapter_images:
         fileName = image_url.split('/')
         fileName = fileName[len(fileName)-1]
