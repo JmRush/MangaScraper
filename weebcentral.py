@@ -60,9 +60,7 @@ def search_manga_ms():
 
 def create_entry_ms(selectedTitle, selectedManga, manga_genre_tags, search_url, base_url):
     # check if selected title is saved in file, if not go for it!
-    print(selectedManga)
     raw_manga_data = selectedManga.findAll('div', "opacity-70")
-    print(raw_manga_data)
     cleanData = []
     cleanGenreTags = []
     # loop through this array and get text for author, year, status, latest chapter (and date updated) and genres (AND LINK)
