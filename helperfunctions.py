@@ -7,6 +7,9 @@ import pathlib
 import requests
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
+import os
+import logging
+logging.basicConfig(level=logging.INFO)
 
 options = ChromeOptions()
 options.add_argument("--headless=new")
@@ -16,23 +19,23 @@ weebCentralBase = "https://weebcentral.com"
 mangakakalotBase = "https://mangakakalot.com"
 headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
 
-BASE_DLPATH = "D:/MANGA STORAGE"
+BASE_DLPATH = "D:\\MANGA STORAGE"
 
 def open_file(function_name):
     try:
         with open("mangaData.json", "r") as outfile:
             data = json.load(outfile)
     except FileNotFoundError:
-        print("File not found, error in " + function_name)
+        logging.error("File not found, error in " + function_name)
         return -1
     except json.decoder.JSONDecodeError:
-        print("Error decoding JSON, error in " + function_name)
+        logging.error("Error decoding JSON, error in " + function_name)
         return -1
     except PermissionError:
-        print("Permission denied, error in " + function_name)
+        logging.error("Permission denied, error in " + function_name)
         return -1
     except Exception as e:
-        print("Unexpeced Error in opening or editing data file at: " + function_name  + " " + str(e))
+        logging.error("Unexpeced Error in opening or editing data file at: " + function_name  + " " + str(e))
         return -1 
     #end file handling
     return data
@@ -45,27 +48,35 @@ def insert_to_file(new_entry):
         with open('mangaData.json', "w") as outfile:
             json.dump(data, outfile, indent=4)
     except FileNotFoundError:
-        print("File not found, error in insert_to_file()")
+        logging.error("File not found, error in insert_to_file()")
+        exit()
     except json.decoder.JSONDecodeError:
-        print("Error decoding JSON, error in insert_to_file()")
+        logging.error("Error decoding JSON, error in insert_to_file()")
+        exit()
     except PermissionError:
-        print("Permission denied, error in insert_to_file()")
+        logging.error("Permission denied, error in insert_to_file()")
+        exit()
     except Exception as e:
-        print("Unexpeced Error in opening or editing data file at: insert_to_file(): " + str(e))
+        logging.error("Unexpeced Error in opening or editing data file at: insert_to_file(): " + str(e))
+        exit()
+    
 
 def update_file(data):
     try:
         with open('mangaData.json', "w") as outfile:
             json.dump(data, outfile, indent=4)
     except FileNotFoundError:
-        print("File not found, error in update_file()")
+        logging.error("File not found, error in update_file()")
+        exit()
     except json.decoder.JSONDecodeError:
-        print("Error decoding JSON, error in update_file()")
+        logging.error("Error decoding JSON, error in update_file()")
+        exit()
     except PermissionError:
-        print("Permission denied, error in update_file()")
+        logging.error("Permission denied, error in update_file()")
+        exit()
     except Exception as e:
-        print("Unexpeced Error in opening or editing data file at: update_file(): " + str(e))
-    print("File updated and saved successfully")
+        logging.error("Unexpeced Error in opening or editing data file at: update_file(): " + str(e))
+        exit()
 
 def download_helper(source):
     found_list_idx = []
@@ -128,7 +139,7 @@ def download_handler(chapter_list, manga_idx):
             print(chapter_list[i] + " WE ARE HERE " +str(default_pages) + " pages left")
             if (default_pages == 0):
                 break
-            if rip_manga_ms(chapter_list[i], data, manga_idx) != True:
+            if fetch_manga_ms(chapter_list[i], data, manga_idx) != True:
                 raise Exception("Error downloading the content requested: Weebcentral")
             else:
                 print("Update the data with the latest lastRipped")
@@ -146,7 +157,7 @@ def download_handler(chapter_list, manga_idx):
                   str(default_pages) + " pages left")
             if (default_pages == 0):
                 break
-            if rip_manga_mk(chapter_list[i], data, manga_idx) != True:
+            if fetch_manga_mk(chapter_list[i], data, manga_idx) != True:
                 raise Exception("Error downloading the content requested: Mangakakalot")
             else:
                 print("Update the data with the latest lastRipped")
@@ -156,62 +167,79 @@ def download_handler(chapter_list, manga_idx):
             default_pages = default_pages-1
             time.sleep(randint(29, 62))
             if (0 >= i-1) and (i-1 > len(chapter_list)):
-                print("No more chapters to gather: Last updated at " +
-                      data[manga_idx]['lastUpdated'])
+                print("No more chapters to gather: Last updated at " +data[manga_idx]['lastUpdated'])
                 raise Exception("No more chapters to gather")
 
-def rip_manga_ms(page, data, manga_idx):
+
+def fetch_manga_ms(page, data, manga_idx):
     driver.get(page)
-    chapter_images = []
     time.sleep(2)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
+
     chapter_folder_wrapper = soup.find("button", "col-span-4 lg:flex-1 btn btn-secondary")
-    chapter_folder = chapter_folder_wrapper.find("span").text
-    chapter_folder = clean_and_strip(chapter_folder)
+    chapter_folder_text = chapter_folder_wrapper.find("span").text
+    chapter_folder = clean_and_strip(chapter_folder_text)
+
+    # Kavita folder parser requires volumes
+    # This will add a volume number of 0 if there is not one already
     if '-' not in chapter_folder:
         chapter_folder = 'S0 - ' + chapter_folder
-    time.sleep(2)
+
+    #Fetching all images elements from the page
     image_elements = soup.find_all('img', class_="maw-w-full mx-auto")
-    try:
-        pathlib.Path(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder).mkdir(parents=True, exist_ok=False)
-    except FileExistsError:
-        print("File already exists, exiting")
-        return False
-    # make request for each image src :)
-    image_count = 0
+
+    dir_path = os.path.join(BASE_DLPATH, data[manga_idx]['title'], chapter_folder)
+    os.makedirs(dir_path, exist_ok=True)
+
+    
+    # Get all imag sources from dom elements
+    image_chapter_sources = []
+
     for img in image_elements:
         img_src = img.get('src')
-        chapter_images.append(img_src)
-    for image_url in chapter_images:
-        fileName = image_url.split('/')
-        fileName = fileName[len(fileName)-1]
-        img_type = image_url.split('.')
-        img_type = img_type[len(img_type)-1]
-        host = urlparse(image_url).netloc
-        if img_type != "jpg" and img_type != "png" and img_type != "jpeg":
-            print("Error, image type is not supported exiting")
-            return False
-        response = requests.get(image_url, headers={"Host": host,'User-Agent': headers, 'Referer': "https://weebcentral.com/", 'Sec-Ch-Ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"'})
-        if (response.status_code != 200):
-            print("Error getting the current file")
-            return False
-        else:
-            with open(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName, 'wb') as f:
-                noop = f.write(response.content)
-        image_count += 1
-        if image_count % 10 == 0:
-            print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName))
-            time.sleep(randint(9, 15))
+        image_chapter_sources.append(img_src)
+
+
+    # Fetching and writing images, using a session, and dynamic headers
+    with requests.Session() as session:
+        image_count = 0
+        for image_url in image_chapter_sources:
+            fileName = image_url.split('/')[-1]
+            image_extension = fileName.split('.')[-1]
+
+            if image_extension.lower() not in ("jpg", "png", "jpeg"):
+                print("Error, image type is not supported exiting")
+                return False
+
+
+            host = urlparse(image_url).netloc
+            dyanmic_headers = {"User-Agent": headers, "Host": host, "Referer": "https://weebcentral.com/", 'Sec-Ch-Ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"'}
+            response = session.get(image_url, headers=dyanmic_headers)
+
+            # Check if the response was successful
+            if (response.status_code != 200):
+                print(f"Error: Failed to fetch {image_url}. HTTP {response.status_code}")
+                return False
+
+            # Write image
+            save_path = os.path.join(BASE_DLPATH, data[manga_idx]['title'], chapter_folder, fileName)
+            with open(save_path, 'wb') as f:
+                f.write(response.content)
+
+            #Log progress, and add delay for scraping so we don't spam 100's of requests in a minute
+            image_count += 1
+            if image_count % 10 == 0:
+                print("Saved {}".format(save_path))
+                time.sleep(randint(9, 15))
     return True
 
-def rip_manga_mk(page, data, manga_idx):
-    chapter_images = []
-    search_url = page
-    driver.get(search_url)
+def fetch_manga_mk(page, data, manga_idx):
+    driver.get(str(page))
+    time.sleep(2)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    image_container = soup.find('div', class_="container-chapter-reader")
+
+    # chapter folder name creations depending on the domain Mangakakalot redirect
     chapter_folder = ""
-    # chapter folder creations
     if "chapmanganato" in data[manga_idx]['link']:
         chapter_selection = soup.find("select", class_="navi-change-chapter")
         chapter_selection = chapter_selection.find("option", selected=True)
@@ -226,42 +254,61 @@ def rip_manga_mk(page, data, manga_idx):
                 chapter_text = clean_and_strip(splt)
                 break
         chapter_folder += chapter_text
+    
+
+    #Checking if the chapter folder has a volume number, if not we add one S0 for the kavita file parser
     if '-' not in chapter_folder:
         chapter_folder = "S0 - " + chapter_folder
-    try:
-        pathlib.Path(BASE_DLPATH + "/" + data[manga_idx]['title'] +
-                     "/" + chapter_folder).mkdir(parents=True, exist_ok=False)
-    except FileExistsError:
-        return False
-    # grabbing image from chapter
+
+
+    #Creating the needed directories for the chapters
+    dir_path = os.path.join(BASE_DLPATH, data[manga_idx]['title'], chapter_folder)
+    os.makedirs(dir_path, exist_ok=True)
+
+
+    #Fetching all image elements from the page and storing them in 
+    image_chapter_sources = []
+    image_container = soup.find('div', class_="container-chapter-reader")
     all_images = image_container.findAll('img')
     for img in all_images:
         if (img.has_attr('title') and img):
             img_src = img.get('src')
-            chapter_images.append(img_src)
-    image_count = 0
-    for image_url in chapter_images:
-        referer = ""
-        fileName = image_url.split('/')
-        fileName = fileName[len(fileName)-1]
-        if "chapmanganato" in data[manga_idx]['link']:
-            referer = "https://chapmanganato.to/"
-        elif "mangakakalot" in data[manga_idx]['link']:
-            referer = "https://mangakakalot.com/"
-        img_type = image_url.split('.')
-        img_type = img_type[len(img_type)-1]
-        if img_type != "jpg" and img_type != "png" and img_type != "jpeg":
-            print("Error, image type is not supported exiting")
-            return False
-        response = requests.get(image_url, headers={'User-Agent': headers, 'Referer': referer})
-        if (response.status_code != 200):
-            print("Error getting the current file")
-            return False
-        else:
-            print("Woooo we have our images")
-            with open(BASE_DLPATH + "/" + data[manga_idx]['title'] + "/" + chapter_folder + '/' + fileName, 'wb') as f:
-                noop = f.write(response.content)
-        image_count += 1
-        if image_count % 10 == 0:
-            print("Saved {}".format(BASE_DLPATH + "/" + data[manga_idx]['title'] +"/" + chapter_folder + '/' + fileName))
-            time.sleep(randint(9, 15))
+            image_chapter_sources.append(img_src)
+
+    #Fetching and writing images, using a session, and dynamic headers
+    with requests.Session() as session:
+        image_count = 0
+        for image_url in image_chapter_sources:
+            #Getting the file name from the image url            
+            fileName = image_url.split('/')[-1]
+            image_extension = fileName.split('.')[-1]
+ 
+            if image_extension.lower() not in ("jpg", "png", "jpeg"):
+                print("Error, image type is not supported exiting")
+                return False
+    
+            #Selecting referer dyanmically based on the domain - mangakakalot uses mutliple domains to host the manga metadata
+            #referer changes based on the domain
+            referer = ""
+            if "chapmanganato" in data[manga_idx]['link']:
+                referer = "https://chapmanganato.to/"
+            elif "mangakakalot" in data[manga_idx]['link']:
+                referer = "https://mangakakalot.com/"
+
+
+            response = session.get(image_url, headers={'User-Agent': headers, 'Referer': referer})
+            if (response.status_code != 200):
+                print("Error getting the current file")
+                return False
+
+            # Write image
+            save_path = os.path.join(BASE_DLPATH, data[manga_idx]['title'], chapter_folder, fileName)
+            with open(save_path, 'wb') as f:
+                f.write(response.content)
+            
+            #Log progress and add a delay for scraping so we don't spam 100's of requests in a minute
+            image_count += 1
+            if image_count % 10 == 0:
+                print("Saved {}".format(save_path))
+                time.sleep(randint(9, 15))
+    
