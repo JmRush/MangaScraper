@@ -114,9 +114,12 @@ def clean_and_strip(item):
 
 
 def download_handler(chapter_list, manga_idx):
+    #Opening data file, and checking if it exists
     data = open_file("download_handler")
     if data == -1 or data == None:
         raise Exception("Data is empty or not found")
+
+    #loop through the chapters to find the lastRipped chapter that matches out stored string
     download_start_idx = -1
     if data[manga_idx]['lastRipped'] == -1:
         download_start_idx = len(chapter_list)-1
@@ -125,38 +128,53 @@ def download_handler(chapter_list, manga_idx):
             if data[manga_idx]['lastRipped'] == chapter_list[i]:
                 download_start_idx = i-1
                 break
-    # update lastRipped each time I get a sucesss from rip_manga()
+
+
     print("Starting from: " + str(download_start_idx) +" at chapter " + chapter_list[download_start_idx])
-    # we want to check if there exists x amount of pages:
-    default_pages = 10
+
+    #End program if there are no more chapters in our list
     if (download_start_idx < 0):
         print("No more chapters to gather: Last updated at " +data[manga_idx]['lastUpdated'] + " with chapter " + data[manga_idx]["lastChapter"])
         return
-    # section this for loop off for each source
+
+    #Default value is set to 10 chapters to download
+    default_chapters_count = 10
+
+    #We have to do this by source - weebcentral vs mangakakalot
     if data[manga_idx]["source"] == weebCentralBase:
+        #Chapters are in reverse order, so we need to loop through the list in reverse order
         for i in reversed(range(download_start_idx+1)):
-            # verify that chapter_list[i] is NOT out of range
-            print(chapter_list[i] + " WE ARE HERE " +str(default_pages) + " pages left")
-            if (default_pages == 0):
+            if (default_chapters_count == 0):
                 break
+
+            #Fetch_manga_ms returns true or false, if false we raise an exception, otherwise we've suceeded on downloading the content
             if fetch_manga_ms(chapter_list[i], data, manga_idx) != True:
                 raise Exception("Error downloading the content requested: Weebcentral")
+                
             else:
                 print("Update the data with the latest lastRipped")
                 data[manga_idx]['lastRipped'] = chapter_list[i]
-                with open('mangaData.json', "w") as outfile:
-                    json.dump(data, outfile, indent=4)
-            default_pages = default_pages-1
+                update_file(data)
+            default_chapters_count = default_chapters_count-1
+
+            #Delay inbetween each call, to avoid spamming the server with requests
             time.sleep(randint(29, 62))
+
+            #If we reach the end of the list, we raise an exception to stop the program
             if (0 >= i-1) and (i-1 > len(chapter_list)):
                 print("No more chapters to gather: Last updated at " +data[manga_idx]['lastUpdated'])
                 raise Exception("No more chapters to gather")
+
     elif data[manga_idx]["source"] == mangakakalotBase:
+
         for i in reversed(range(download_start_idx+1)):
-            print(chapter_list[i] + " WE ARE HERE " +
-                  str(default_pages) + " pages left")
-            if (default_pages == 0):
+
+            print(chapter_list[i] + " WE ARE HERE " + str(default_chapters_count) + " pages left")
+            if (default_chapters_count== 0):
                 break
+
+            #Fetch_manga_mk returns true or false, if the fetch was unsuccessful we raise an exception, otherwise we've suceeded on downloading the content
+            #and update the data with the latest lastRipped
             if fetch_manga_mk(chapter_list[i], data, manga_idx) != True:
                 raise Exception("Error downloading the content requested: Mangakakalot")
             else:
@@ -164,7 +182,9 @@ def download_handler(chapter_list, manga_idx):
                 data[manga_idx]['lastRipped'] = chapter_list[i]
                 with open('mangaData.json', "w") as outfile:
                     json.dump(data, outfile, indent=4)
-            default_pages = default_pages-1
+
+
+            default_chapters_count= default_chapters_count-1
             time.sleep(randint(29, 62))
             if (0 >= i-1) and (i-1 > len(chapter_list)):
                 print("No more chapters to gather: Last updated at " +data[manga_idx]['lastUpdated'])
