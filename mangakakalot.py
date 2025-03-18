@@ -12,7 +12,7 @@ def search_manga_mk():
     if " " in user_manga:
         user_manga = user_manga.replace(" ", "_")
 
-
+    # Fetch page
     search_url = "https://mangakakalot.com/search/story/" + user_manga
     driver.get(search_url)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -23,33 +23,42 @@ def search_manga_mk():
         print("Nothing found on mangakakalot, please retry your search or select from another source")
         return
 
-    # process data and then create a entry in mangadata.json
+    # Fetch title of manga card element, and clean it
     for i in range(len(manga_data_wrapper)):
         title_element = manga_data_wrapper[i].find('h3', class_="story_name")
         title = clean_and_strip(title_element.text)
         display_list_num = i+1
         print(str(display_list_num) + ". " + title)
 
+    # Get the user input for which manga they want to select
     selected_manga = input("Select a manga from the given list: ")
     if 0 <= int(selected_manga)-1 <= len(manga_data_wrapper):
-        title = manga_data_wrapper[int(
-            selected_manga)-1].find('h3', class_="story_name")
-        story_link = title.find('a')['href']
-        title = clean_and_strip(title.text)
+
+        #Select the title element clean it, and get the link to the selected manga
+        title_element = manga_data_wrapper[int(selected_manga)-1].find('h3', class_="story_name")
+        story_link = title_element.find('a')['href']
+        title = clean_and_strip(title_element.text)
         print("You have selected " + title + "! ")
         print(manga_data_wrapper[int(selected_manga)-1])
+
+
+        # Ask user if they want to add the manga to their library
         insertToFile = input("Would you like to insert to mangaData? : Y/N")
+        #If yes, get all the metadata for the manga and create an entry
         if insertToFile == "y" or insertToFile == "Y":
-            story_item_right = manga_data_wrapper[int(
-                selected_manga)-1].find('div', class_="story_item_right")
-            story_latest_chapter = story_item_right.find(
-                'em', class_="story_chapter").text
-            story_latest_chapter = clean_and_strip(story_latest_chapter).split("")[1]
-            story_data = story_item_right.findAll("span")
+            #Latest chapter released
+            story_item_right = manga_data_wrapper[int(selected_manga)-1].find('div', class_="story_item_right") #named after the class wrapping the data
+            story_latest_chapter_text = story_item_right.find('em', class_="story_chapter").text
+            story_latest_chapter = clean_and_strip(story_latest_chapter_text).split("")[1]
+
+            #Author and lastUpdated date
+            story_data = story_item_right.findAll("span") #Element wrapping the data
             story_author = clean_and_strip(story_data[0].text.split(':')[1])
             story_last_updated = clean_and_strip(story_data[1].text.split(':')[1])
-            genres, status = get_genre_status(story_link)
-            mk_entry = {
+            genres, status = get_genre_status(story_link) #calls function that cleans, and returns the genre tags and status (ongoing/completed)
+
+            #Creating an object with the data gathered from the webpage
+            mk_data_entry = {
                 "author": story_author,
                 "status": status,
                 "lastChapter": story_latest_chapter,
@@ -62,7 +71,8 @@ def search_manga_mk():
                 "source": mangakakalotBase,
                 "lastRipped": -1
             }
-            insert_to_file(mk_entry)
+            #saving the object containing the metadata into our data file
+            insert_to_file(mk_data_entry)
         else:
             print("Item not added to list, incorrect input or selected no")
     else:
