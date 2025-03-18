@@ -8,6 +8,7 @@ from helperfunctions import driver, mangakakalotBase
 
 def search_manga_mk():
     user_manga = input("Enter manga: ")
+
     # normalizing for URL param search
     if " " in user_manga:
         user_manga = user_manga.replace(" ", "_")
@@ -55,7 +56,7 @@ def search_manga_mk():
             story_data = story_item_right.findAll("span") #Element wrapping the data
             story_author = clean_and_strip(story_data[0].text.split(':')[1])
             story_last_updated = clean_and_strip(story_data[1].text.split(':')[1])
-            genres, status = get_genre_status(story_link) #calls function that cleans, and returns the genre tags and status (ongoing/completed)
+            genres, status = get_genre_and_status(story_link) #calls function that cleans, and returns the genre tags and status (ongoing/completed)
 
             #Creating an object with the data gathered from the webpage
             mk_data_entry = {
@@ -88,43 +89,51 @@ def download_manga_mk():
     
 
 
-def get_genre_status(link):
-    status = -1
+def get_genre_and_status(link):
+    # ----------------------------------------------------------------------------------------
+    #Genre and status are both found on the main endpoint of the manga, not on the search card
+    # ----------------------------------------------------------------------------------------
+    manga_status = -1
     genre_list = []
+
     driver.get(link)
-    domain = link.split("/manga")
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    # multiple domains that the manga redirects to
-    # mangakakalot has '/manga' in it, which results in a bad split, which is resolved in my check
-    if (domain[0] + '/manga' + domain[1] == "https://mangakakalot.com"):
-        container = soup.find("ul", class_="manga-info-text")
-        list_items = container.findAll('li')
+
+    # Mangakakalot redirects to two domains, chapmanganato and mangakakalot, so we need to check which one this specific manga redirects to
+    if ("https://mangakakalot.com" in link):
+        data_container = soup.find("ul", class_="manga-info-text")
+        list_items = data_container.findAll('li')
+
         for i in range(len(list_items)):
             item = clean_and_strip(list_items[i].text)
             if "Genres" in item:
                 item = item.split(' :')
                 genre_list = item[1].split(', ')
-                genre_list[len(genre_list) -
-                           1] = genre_list[len(genre_list)-1].replace(",", "")
+                genre_list[len(genre_list) -1] = genre_list[len(genre_list)-1].replace(",", "")
             if "Status" in item:
                 item = item.split(': ')
-                status = item[1]
-    if (domain[0] == "https://chapmanganato.to"):
-        container = soup.find("table", class_="variations-tableInfo")
-        container = container.findAll('tr')
-        for i in range(len(container)):
+                manga_status = item[1]
+
+    if ("https://chapmanganato.to" in link):
+        data_container = soup.find("table", class_="variations-tableInfo")
+        container_rows = data_container.findAll('tr')
+
+        for i in range(len(container_rows)):
             # find first table data in each row with the tag "status and genres"
-            td = container[i].find('td')
+            td = container_rows[i].find('td')
             td_desc = clean_and_strip(td.text)
+
+            #Only capture the status and genre data, as we already have the other metadata from the search card
             if (td_desc == 'Status :'):
-                status = container[i].findAll('td')
-                status = clean_and_strip(status[1].text)
+                status_element = container_rows[i].findAll('td')
+                manga_status = clean_and_strip(status_element[1].text)
             elif (td_desc == 'Genres :'):
-                genre_group = container[i].findAll('td')
-                genre_group = genre_group[1].findAll('a')
-                for item in range(len(genre_group)):
-                    genre_list.append(genre_group[item].text)
-    return genre_list, status
+                genre_element_group = container_rows[i].findAll('td')
+                genre_group_links = genre_element_group[1].findAll('a')
+                for item in range(len(genre_group_links)):
+                    genre_list.append(genre_group_links[item].text)
+
+    return genre_list, manga_status
 
 def get_chapter_list_mk(manga_idx):
     chapter_list = []
