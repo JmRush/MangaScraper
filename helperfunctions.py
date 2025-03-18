@@ -79,34 +79,47 @@ def update_file(data):
         exit()
 
 def download_helper(source):
-    found_list_idx = []
+    # ----------------------------------------------------------
+    #Finding the indices of objects stored in our data file that match user input
+    #returning the user selected object
+    # ----------------------------------------------------------
+
     selected = input("Hello! Select a manga from your list to scrape: ")
+    #Opening data file, and checking if it exists
     data = open_file("download_helper")
     if data == -1 or data == None:
         raise Exception("Data is empty or not found")
+
+
+    #Checking if the input from the user, and the source are matched in the data file
+    #Anything with the contained text, and correct source will be added to the found_item_idx
+    found_item_idx = []
     for i in range(len(data)):
         if (selected in data[i]['title'] or selected.capitalize() in data[i]["title"]):
             if data[i]["source"] == source:
-                print("FOUND TITLE MATCH AND SOURCE")
-                found_list_idx.append(i)
+                found_item_idx.append(i)
             else:
                 print("FOUND TITLE MATCH BUT NOT SOURCE")
                 return
-    if len(found_list_idx) != 0:
-        for i in range(len(found_list_idx)):
-            print(str(i+1) + ": " + data[found_list_idx[i]]["title"])
+
+    #If an item is found, we will print the list of items found, and ask the user to select one
+    if len(found_item_idx) != 0:
+        for i in range(len(found_item_idx)):
+            print(str(i+1) + ": " + data[found_item_idx[i]]["title"])
         selected_manga_idx = input("Select a manga from your searched items: ")
         if(selected_manga_idx == "0"):
-            print("Exiting download handler")
+            print("Exiting download handler") #Selecting something that does not exist, as the items are numbered from index 0
             return
-        elif (int(selected_manga_idx)-1 > len(found_list_idx)-1):
-            print("Error, item not found in your list with the selected source")
+        elif (int(selected_manga_idx)-1 > len(found_item_idx)-1):
+            print("Error, item not found in your list with the selected source") #Indexing error, selecting something out of bounds
             return
-        realIdx = found_list_idx[int(selected_manga_idx)-1]
+        realIdx = found_item_idx[int(selected_manga_idx)-1]
         return realIdx
     else:
         print("Error, Item was not found in your list with the selected source: returning -1")
         return -1
+
+
 
 def clean_and_strip(item):
     item = item.replace('\n', "").replace('\t', "").strip()
@@ -129,8 +142,6 @@ def download_handler(chapter_list, manga_idx):
                 download_start_idx = i-1
                 break
 
-
-    print("Starting from: " + str(download_start_idx) +" at chapter " + chapter_list[download_start_idx])
 
     #End program if there are no more chapters in our list
     if (download_start_idx < 0):
@@ -169,7 +180,6 @@ def download_handler(chapter_list, manga_idx):
 
         for i in reversed(range(download_start_idx+1)):
 
-            print(chapter_list[i] + " WE ARE HERE " + str(default_chapters_count) + " pages left")
             if (default_chapters_count== 0):
                 break
 
@@ -180,16 +190,18 @@ def download_handler(chapter_list, manga_idx):
             else:
                 print("Update the data with the latest lastRipped")
                 data[manga_idx]['lastRipped'] = chapter_list[i]
-                with open('mangaData.json', "w") as outfile:
-                    json.dump(data, outfile, indent=4)
-
+                update_file(data)
 
             default_chapters_count= default_chapters_count-1
-            time.sleep(randint(29, 62))
+
+            #Reached end of list, no more chapters to fetch
             if (0 >= i-1) and (i-1 > len(chapter_list)):
                 print("No more chapters to gather: Last updated at " +data[manga_idx]['lastUpdated'])
                 raise Exception("No more chapters to gather")
 
+            #Delay inbetween each call, to avoid spamming the server with requests
+            time.sleep(randint(29, 62))
+            
 
 def fetch_manga_ms(page, data, manga_idx):
     driver.get(page)
