@@ -8,34 +8,39 @@ from helperfunctions import driver, mangakakalotBase
 
 def search_manga_mk():
     user_manga = input("Enter manga: ")
+    # normalizing for URL param search
     if " " in user_manga:
-        # replace space with _ for url parameters
         user_manga = user_manga.replace(" ", "_")
-    # seperate by inserting base url at the first index before adding any data, will check for domain change, and will label as such to user
+
+
     search_url = "https://mangakakalot.com/search/story/" + user_manga
     driver.get(search_url)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    manga_data_list = soup.findAll('div', class_="story_item")
-    if (manga_data_list == []):
+
+    #Get the element that wraps the manga containers, check if it exists
+    manga_data_wrapper = soup.findAll('div', class_="story_item")
+    if (manga_data_wrapper == []):
         print("Nothing found on mangakakalot, please retry your search or select from another source")
         return
+
     # process data and then create a entry in mangadata.json
-    for i in range(len(manga_data_list)):
-        title = manga_data_list[i].find('h3', class_="story_name").text
-        title = clean_and_strip(title)
-        list_num = i+1
-        print(str(list_num) + ". " + title)
+    for i in range(len(manga_data_wrapper)):
+        title_element = manga_data_wrapper[i].find('h3', class_="story_name")
+        title = clean_and_strip(title_element.text)
+        display_list_num = i+1
+        print(str(display_list_num) + ". " + title)
+
     selected_manga = input("Select a manga from the given list: ")
-    if 0 <= int(selected_manga)-1 <= len(manga_data_list):
-        title = manga_data_list[int(
+    if 0 <= int(selected_manga)-1 <= len(manga_data_wrapper):
+        title = manga_data_wrapper[int(
             selected_manga)-1].find('h3', class_="story_name")
         story_link = title.find('a')['href']
         title = clean_and_strip(title.text)
         print("You have selected " + title + "! ")
-        print(manga_data_list[int(selected_manga)-1])
+        print(manga_data_wrapper[int(selected_manga)-1])
         insertToFile = input("Would you like to insert to mangaData? : Y/N")
         if insertToFile == "y" or insertToFile == "Y":
-            story_item_right = manga_data_list[int(
+            story_item_right = manga_data_wrapper[int(
                 selected_manga)-1].find('div', class_="story_item_right")
             story_latest_chapter = story_item_right.find(
                 'em', class_="story_chapter").text
