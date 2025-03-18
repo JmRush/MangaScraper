@@ -274,17 +274,20 @@ def fetch_manga_mk(page, data, manga_idx):
     chapter_folder = ""
     if "chapmanganato" in data[manga_idx]['link']:
         chapter_selection = soup.find("select", class_="navi-change-chapter")
-        chapter_selection = chapter_selection.find("option", selected=True)
-        chapter_selection = clean_and_strip(chapter_selection.text)
-        chapter_folder += chapter_selection
+        chapter_selection_element = chapter_selection.find("option", selected=True) #Selecting an option box with text about current chapter
+
+        chapter_selection_text = clean_and_strip(chapter_selection_element.text)
+        chapter_folder += chapter_selection_text
+
     elif "mangakakalot" in data[manga_idx]["link"]:
         chapter_h1 = soup.find("h1", class_="current-chapter")
-        chapter_text = chapter_h1.text
-        chapter_text = chapter_text.split(": ")
+        chapter_text = chapter_h1.text.split(": ")
+        
         for splt in chapter_text:
             if "chapter" in splt or "Chapter" in splt:
                 chapter_text = clean_and_strip(splt)
                 break
+
         chapter_folder += chapter_text
     
 
