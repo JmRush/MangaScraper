@@ -136,31 +136,44 @@ def get_genre_and_status(link):
     return genre_list, manga_status
 
 def get_chapter_list_mk(manga_idx):
-    chapter_list = []
+
+    #Opening the file that contains the data for the manga, checking if its empty
     data = open_file("get_chapter_list_mk")
     if data == -1 or data == None:
         raise Exception("Data is empty or not found")
+
+    #Getting the link to the selected manga
     manga_source = data[manga_idx]["link"]
     driver.get(manga_source)
+
+    #Fetch the manga page with the chapter list and get the chapter list, using different selectors for the two domains
+    chapter_list = []
     if "chapmanganato" in manga_source:
-        # row-content-chapter
         soup = BeautifulSoup(driver.page_source, 'html.parser')
+
         chapter_container = soup.find('ul', class_="row-content-chapter")
         list_items = chapter_container.findAll("li", class_="a-h")
+
+        #Fetch the links to each chapter available and append to list
         for i in range(len(list_items)):
-            anchor = list_items[i].find('a')
-            link = anchor['href']
+            anchor_element = list_items[i].find('a')
+            link = anchor_element['href']
             chapter_list.append(link)
+
     if "mangakakalot" in manga_source:
-        # chapter-list
         soup = BeautifulSoup(driver.page_source, 'html.parser')
+
         chapter_container = soup.find('div', class_="chapter-list")
         outter_wrappers = chapter_container.findAll("div", class_="row")
+
+        #Fetch the links to each chapter available and append to list
         for i in range(len(outter_wrappers)):
-            span = outter_wrappers[i].find("span")
-            anchor = span.find("a")
-            link = anchor['href']
+            span_container = outter_wrappers[i].find("span")
+            anchor_element = span_container.find("a")
+            link = anchor_element['href']
             chapter_list.append(link)
+
+    #Send the chapter links and the index of the manga to the download handler, to save the images and update the file
     download_handler(chapter_list, manga_idx)
 
 def update_manga_data_mk(manga_idx, data):

@@ -3,7 +3,6 @@ import time
 from random import randint
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
-import pathlib
 import requests
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
@@ -179,7 +178,6 @@ def download_handler(chapter_list, manga_idx):
     elif data[manga_idx]["source"] == mangakakalotBase:
 
         for i in reversed(range(download_start_idx+1)):
-
             if (default_chapters_count== 0):
                 break
 
