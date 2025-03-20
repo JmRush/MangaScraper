@@ -8,7 +8,6 @@ from helperfunctions import driver, mangakakalotBase
 
 def search_manga_mk():
     user_manga = input("Enter manga: ")
-
     # normalizing for URL param search
     if " " in user_manga:
         user_manga = user_manga.replace(" ", "_")
@@ -93,13 +92,12 @@ def get_genre_and_status(link):
     # ----------------------------------------------------------------------------------------
     #Genre and status are both found on the main endpoint of the manga, not on the search card
     # ----------------------------------------------------------------------------------------
-    manga_status = -1
-    genre_list = []
-
     driver.get(link)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
     # Mangakakalot redirects to two domains, chapmanganato and mangakakalot, so we need to check which one this specific manga redirects to
+    manga_status = -1
+    genre_list = []
     if ("https://mangakakalot.com" in link):
         data_container = soup.find("ul", class_="manga-info-text")
         list_items = data_container.findAll('li')
@@ -136,7 +134,6 @@ def get_genre_and_status(link):
     return genre_list, manga_status
 
 def get_chapter_list_mk(manga_idx):
-
     #Opening the file that contains the data for the manga, checking if its empty
     data = open_file("get_chapter_list_mk")
     if data == -1 or data == None:
@@ -177,27 +174,36 @@ def get_chapter_list_mk(manga_idx):
     download_handler(chapter_list, manga_idx)
 
 def update_manga_data_mk(manga_idx, data):
-    # we want to update latestChapter, lastUpdated, status, which will have to be done depending on the domain
+    #Updating some of the metadata for the manga, such as the latest chapter, last updated, and the running status
     link = data[manga_idx]["link"]
     driver.get(link)
     time.sleep(2)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+    #Check which domain the manga is hosted on, and fetch the data accordingly
     if (mangakakalotBase in link):
-        # manga-info-text
-        top_wrapper = soup.find("ul", "manga-info-text")
-        data_points = top_wrapper.findAll("li")
+
+        #Get the data wrapper for the manga, which is an UL, and create a list of the data points, the LI elements
+        top_data_wrapper = soup.find("ul", "manga-info-text")
+        data_points = top_data_wrapper.findAll("li")
+
+        #Initialize variables to store the data
         status = -1
         last_updated = -1
         latest_chapter = -1
+
+        #Loop through the data points, and check if the text contains the data we want, if it does, clean it and store it
         for point in data_points:
             if "Status" in point.text:
                 status = clean_and_strip(point.text.split(":")[1])
             if "Last updated" in point.text:
-                last_updated = clean_and_strip(clean_and_strip(point.text.split(":")[1]).split(" ")[0])
-                print(last_updated)
-                last_updated = datetime.strptime(last_updated, '%b-%d-%Y').strftime('%m-%d-%Y')
-        chapter_wrapper = soup.find("div", "chapter-list")
-        latest_chapter = chapter_wrapper.find("a").text 
+                last_updated = clean_and_strip(clean_and_strip(point.text.split(":")[1]).split(" ")[0])# Cleaning the datetime of any extra characters in order to properly format it
+                last_updated = datetime.strptime(last_updated, '%b-%d-%Y').strftime('%m-%d-%Y') # Formating datetime to mm-dd-yyyy
+        chapter_wrapper = soup.find("div", "chapter-list") # Get the wrapper for the chapter list
+        latest_chapter = chapter_wrapper.find("a").text  # Get the top chapter in the list, which is the latest
+
+
+        #If everything is found, update the file
         if(chapter_wrapper != -1 and latest_chapter != -1  and status != -1):
             data[manga_idx]["lastUpdated"] = last_updated
             data[manga_idx]["lastChapter"] = latest_chapter
@@ -205,13 +211,19 @@ def update_manga_data_mk(manga_idx, data):
             update_file(data)
         else:
             raise Exception("Unable to find time updated, status or latest chapter")
+
     if ("chapmanganato" in link):
-        status_wrapper = soup.find("i", "info-status").parent.parent
-        last_updated_wrapper = soup.find("i", "info-time").parent.parent
+        #data wrappers for status, last updated, and latest chapter
+        status_wrapper = soup.find("i", "info-status").parent.parent #Easiest way to grab the data was find a unique child element
+        last_updated_wrapper = soup.find("i", "info-time").parent.parent #Easiest way to grab the data was find a unique child element
         latest_chapter_wrapper = soup.find("ul", "row-content-chapter")
+
+        #getting the elements holding the data from the wrappers
         status = status_wrapper.find("td", "table-value")
         last_updated = last_updated_wrapper.find("span", "stre-value")
         latest_chapter = latest_chapter_wrapper.find("a", "chapter-name text-nowrap")
+
+        #If the items are not "Falsy", we can grab the text from the elements and update the file
         if(status and last_updated and latest_chapter):
             status = status.text
             last_updated = last_updated.text
