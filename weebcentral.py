@@ -3,7 +3,7 @@ from selenium.webdriver.common.by import By
 import time
 from datetime import datetime, date
 from urllib.parse import quote
-from helperfunctions import insert_to_file, download_handler, download_helper, clean_and_strip, open_file, update_file
+from helperfunctions import insert_to_file, download_handler, match_index_and_source, clean_and_strip, open_file, update_file
 from helperfunctions import driver, weebCentralBase
 
 def search_manga_ms():
@@ -109,7 +109,7 @@ def create_entry_ms(selectedTitle, selectedManga, manga_genre_tags, search_url, 
 
 
 def download_manga_ms():
-    realIdx = download_helper(weebCentralBase)
+    realIdx = match_index_and_source(weebCentralBase)
     if realIdx != -1:
         get_chapter_list_ms(realIdx)
     else:

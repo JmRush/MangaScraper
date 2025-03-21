@@ -1,7 +1,7 @@
 import time
 from datetime import datetime
 from bs4 import BeautifulSoup
-from helperfunctions import clean_and_strip, insert_to_file, download_handler, download_helper, open_file, update_file
+from helperfunctions import clean_and_strip, insert_to_file, download_handler, match_index_and_source, open_file, update_file
 from helperfunctions import driver, mangakakalotBase
 
 
@@ -80,7 +80,7 @@ def search_manga_mk():
         return
 
 def download_manga_mk():
-    realIdx = download_helper(mangakakalotBase)
+    realIdx = match_index_and_source(mangakakalotBase)
     if realIdx != -1:
         get_chapter_list_mk(realIdx)
     else:
@@ -182,7 +182,6 @@ def update_manga_data_mk(manga_idx, data):
 
     #Check which domain the manga is hosted on, and fetch the data accordingly
     if (mangakakalotBase in link):
-
         #Get the data wrapper for the manga, which is an UL, and create a list of the data points, the LI elements
         top_data_wrapper = soup.find("ul", "manga-info-text")
         data_points = top_data_wrapper.findAll("li")
@@ -228,6 +227,7 @@ def update_manga_data_mk(manga_idx, data):
             status = status.text
             last_updated = last_updated.text
             latest_chapter = latest_chapter.text
+
             data[manga_idx]["status"] = status
             data[manga_idx]["lastChapter"] = latest_chapter
             #process date to be in the format of mm-dd-yyyy
