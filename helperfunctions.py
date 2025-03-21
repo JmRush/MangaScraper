@@ -82,6 +82,7 @@ def match_index_and_source(source):
     #Finding the indices of objects stored in our data file that match user input
     #returning the user selected object
     # ----------------------------------------------------------
+
     selected = input("Hello! Select a manga from your list to scrape: ")
     #Opening data file, and checking if it exists
     data = open_file("download_helper")
@@ -101,9 +102,12 @@ def match_index_and_source(source):
 
     #If an item is found, we will print the list of items found, and ask the user to select one
     if len(found_item_idx) != 0:
+
         #Print the list of items found
         for i in range(len(found_item_idx)):
             print(str(i+1) + ": " + data[found_item_idx[i]]["title"])
+
+        #Have the user select an item from the list
         selected_manga_idx = input("Select a manga from your searched items: ")
         if(selected_manga_idx == "0"):
             print("Exiting download handler") #Selecting something that does not exist, as the items are numbered from index 0
