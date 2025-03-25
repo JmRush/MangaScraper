@@ -135,7 +135,7 @@ def create_entry_ms(selectedTitle, selectedManga, manga_genre_tags, search_url, 
     insert_to_file(new_entry)
 
 
-def download_manga_ms():
+def download_index_manga_ms():
     realIdx = match_index_and_source(weebCentralBase)
     if realIdx != -1:
         get_chapter_list_ms(realIdx)
@@ -175,20 +175,22 @@ def update_manga_data_wc(manga_idx, data):
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
 
-    # we want to update latestChapter, lastUpdated, status
     chapter_wrapper = soup.find(id="chapter-list")
 
+    #Get the latest chapter
     latest_chapter_wrapper = chapter_wrapper.find('a', class_="hover:bg-base-300 flex-1 flex items-center p-2")
     latest_chapter = latest_chapter_wrapper.find("span", "grow flex items-center gap-2").find("span").text
 
-    latest_time = latest_chapter_wrapper.find('time', "opacity-50")["datetime"]
-    latest_time = datetime.strptime(latest_time, "%Y-%m-%dT%H:%M:%S.%fZ")
-    latest_time = latest_time.strftime("%m-%d-%Y")
+    #Fetch the latest time, and format it
+    latest_time_data = latest_chapter_wrapper.find('time', "opacity-50")["datetime"]
+    latest_time_date_time = datetime.strptime(latest_time_data, "%Y-%m-%dT%H:%M:%S.%fZ")
+    latest_time = latest_time_date_time.strftime("%m-%d-%Y")
 
-    data_wrapper_element = soup.findAll("ul", "flex flex-col gap-4")[0]
-    data_wrapper = data_wrapper_element.findAll("a", "link link-info link-hover")
+    #Fetch the status of the manga
+    status_wrapper_element = soup.findAll("ul", "flex flex-col gap-4")[0]
+    status_data_elements = status_wrapper_element.findAll("a", "link link-info link-hover")
     status = -1
-    for datum in data_wrapper:
+    for datum in status_data_elements:
         if "Ongoing" in datum.text:
             status = "Ongoing"
         elif "Completed" in datum.text:
@@ -197,10 +199,10 @@ def update_manga_data_wc(manga_idx, data):
             status = "Hiatus"
         elif "Canceled" in datum.text:
             status = "Canceled"
+
+
+    #If all the data fetched exists, update the data file
     if(latest_time and latest_chapter and status != -1):
-        print("Latest chapter: " + latest_chapter)
-        print("Last updated: " + latest_time)
-        print("Status: " + status)
         data[manga_idx]["lastChapter"] = latest_chapter
         data[manga_idx]["lastUpdated"] = latest_time
         data[manga_idx]["status"] = status
