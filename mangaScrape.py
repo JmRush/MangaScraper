@@ -1,4 +1,4 @@
-from weebcentral import search_manga_ms, download_manga_ms, update_manga_data_wc
+from weebcentral import search_manga_ms, download_index_manga_ms, update_manga_data_wc
 from mangakakalot import search_manga_mk, download_manga_mk, update_manga_data_mk
 from helperfunctions import open_file, weebCentralBase, mangakakalotBase
 
@@ -68,7 +68,7 @@ def main():
         case "4":
             update_manga_data()
         case "5":
-            download_manga_ms()
+            download_index_manga_ms()
         case "6":
             download_manga_mk()
         case _:

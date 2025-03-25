@@ -77,7 +77,7 @@ def update_file(data):
         logging.error("Unexpeced Error in opening or editing data file at: update_file(): " + str(e))
         exit()
 
-def download_helper(source):
+def match_index_and_source(source):
     # ----------------------------------------------------------
     #Finding the indices of objects stored in our data file that match user input
     #returning the user selected object
@@ -88,7 +88,6 @@ def download_helper(source):
     data = open_file("download_helper")
     if data == -1 or data == None:
         raise Exception("Data is empty or not found")
-
 
     #Checking if the input from the user, and the source are matched in the data file
     #Anything with the contained text, and correct source will be added to the found_item_idx
@@ -103,8 +102,12 @@ def download_helper(source):
 
     #If an item is found, we will print the list of items found, and ask the user to select one
     if len(found_item_idx) != 0:
+
+        #Print the list of items found
         for i in range(len(found_item_idx)):
             print(str(i+1) + ": " + data[found_item_idx[i]]["title"])
+
+        #Have the user select an item from the list
         selected_manga_idx = input("Select a manga from your searched items: ")
         if(selected_manga_idx == "0"):
             print("Exiting download handler") #Selecting something that does not exist, as the items are numbered from index 0
