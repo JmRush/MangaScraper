@@ -210,6 +210,8 @@ def fetch_manga_ms(page, data, manga_idx):
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
     chapter_folder_wrapper = soup.find("button", "col-span-4 lg:flex-1 btn btn-secondary")
+    if chapter_folder_wrapper is None:
+        chapter_folder_wrapper = soup.find("button", "col-span-3 lg:flex-1 btn btn-secondary")
     chapter_folder_text = chapter_folder_wrapper.find("span").text
     chapter_folder = clean_and_strip(chapter_folder_text)
 
