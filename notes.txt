@@ -1,2 +1,9 @@
+TODO:
 
 
+Mangakakalot: domain has shut down, and is no longer available. They opened under a new domain. 
+Mangakakalot: Unsure if complete rewrite is required, but must fix.
+
+
+Maybe: Cronjob some downloads to keep my library updated
+Maybe: Priority Levels on the Cronjob? - Update X amount of manga on the priority list. If there are no available chapters, go to the next priority number.
