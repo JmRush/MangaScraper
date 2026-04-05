@@ -29,9 +29,9 @@ cd MangaScraper
 3. Install Dependencies
 - (A) Install dependencies directly
 ```
-pip install beautifulsoup4 selenium
+pip install beautifulsoup4 selenium requests
 ```
-- (B) Use python's virtual environment
+- (B) Use python's virtual environment - RECOMMENDED
 ```
 python -m venv venv
 venv/Scripts/activate
@@ -40,7 +40,7 @@ pip install -r requirements.txt
 ## Usage
 - Using Directly installed dependencies 3(A)
 ```sh
-    python mangaScraper.py
+    python mangaScrape.py
 ```
 - Using python's virtual environment 3(B)
 ```
