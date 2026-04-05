@@ -8,6 +8,8 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import os
 import logging
+from pathlib import Path
+import re
 logging.basicConfig(level=logging.INFO)
 
 options = ChromeOptions()
@@ -18,7 +20,8 @@ weebCentralBase = "https://weebcentral.com"
 mangakakalotBase = "https://mangakakalot.com"
 headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
 
-BASE_DLPATH = "D:\\MANGA STORAGE"
+BASE_DLPATH = Path("E:/MANGA STORAGE")
+
 
 def open_file(function_name):
     try:
@@ -93,7 +96,8 @@ def match_index_and_source(source):
     #Anything with the contained text, and correct source will be added to the found_item_idx
     found_item_idx = []
     for i in range(len(data)):
-        if (selected in data[i]['title'] or selected.capitalize() in data[i]["title"]):
+        print(data[i]["title"])
+        if (selected in data[i]['title'] or selected.capitalize() in data[i]["title"] or selected.lower() in data[i]["title"].lower()):
             if data[i]["source"] == source:
                 found_item_idx.append(i)
             else:
@@ -163,7 +167,6 @@ def download_handler(chapter_list, manga_idx):
             #Fetch_manga_ms returns true or false, if false we raise an exception, otherwise we've suceeded on downloading the content
             if fetch_manga_ms(chapter_list[i], data, manga_idx) != True:
                 raise Exception("Error downloading the content requested: Weebcentral")
-                
             else:
                 print("Update the data with the latest lastRipped")
                 data[manga_idx]['lastRipped'] = chapter_list[i]
@@ -223,8 +226,10 @@ def fetch_manga_ms(page, data, manga_idx):
     #Fetching all images elements from the page
     image_elements = soup.find_all('img', class_="maw-w-full mx-auto")
 
-    dir_path = os.path.join(BASE_DLPATH, data[manga_idx]['title'], chapter_folder)
-    os.makedirs(dir_path, exist_ok=True)
+    path_title = re.sub(r'[^\w\s-]', '', data[manga_idx]['title'])
+    dir_path = BASE_DLPATH.joinpath(path_title, chapter_folder)
+    print(dir_path)
+    Path(dir_path).mkdir(parents=True, exist_ok=True)
 
     
     # Get all imag sources from dom elements
@@ -240,6 +245,7 @@ def fetch_manga_ms(page, data, manga_idx):
         image_count = 0
         for image_url in image_chapter_sources:
             fileName = image_url.split('/')[-1]
+
             image_extension = fileName.split('.')[-1]
 
             if image_extension.lower() not in ("jpg", "png", "jpeg"):
@@ -257,7 +263,7 @@ def fetch_manga_ms(page, data, manga_idx):
                 return False
 
             # Write image
-            save_path = os.path.join(BASE_DLPATH, data[manga_idx]['title'], chapter_folder, fileName)
+            save_path = BASE_DLPATH.joinpath(path_title, chapter_folder, fileName)
             with open(save_path, 'wb') as f:
                 f.write(response.content)
 
@@ -278,9 +284,12 @@ def fetch_manga_mk(page, data, manga_idx):
     if "chapmanganato" in data[manga_idx]['link']:
         chapter_selection = soup.find("select", class_="navi-change-chapter")
         chapter_selection_element = chapter_selection.find("option", selected=True) #Selecting an option box with text about current chapter
-
         chapter_selection_text = clean_and_strip(chapter_selection_element.text)
         chapter_folder += chapter_selection_text
+        chapter_folder = re.sub(r'[^a-zA-Z0-9._-]', '', chapter_folder)
+        print(chapter_folder)
+
+
 
     elif "mangakakalot" in data[manga_idx]["link"]:
         chapter_h1 = soup.find("h1", class_="current-chapter")
