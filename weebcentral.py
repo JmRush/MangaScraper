@@ -37,7 +37,7 @@ def search_manga_ms():
         if "https://weebcentral.com/series/" in manga['href']:
             manga_results.append(manga)
 
-
+    print(manga_results)
     #Print out the manga results
     for i in range(len(manga_results)):
         list_num = i+1
@@ -111,11 +111,14 @@ def create_entry_ms(selectedTitle, selectedManga, manga_genre_tags, search_url, 
         cleanGenreTags.append(tag)
 
     #Check if the translation is official or not by checking the title of the abbr tag (its an icon that shows up next to the title)
-    translation = selectedManga.find("abbr")["title"]
-    if "Official Translation" in translation:
-        translation = "Official Translation"
+    if selectedManga.find("abbr") is not None:
+        translation = selectedManga.find("abbr")["title"]
+        if "Official Translation" in translation:
+            translation = "Official Translation"
+        else:
+            translation = "Not Official Translation"
     else:
-        translation = "Not Official Translation"
+        translation = "N/A"
 
     #Create the new entry, and add it to the data file
     new_entry = {

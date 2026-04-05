@@ -11,7 +11,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 options = ChromeOptions()
-options.add_argument("--headless=new")
+#options.add_argument("--headless=new")
 options.add_argument("--log-level=3")
 driver = webdriver.Chrome(options=options)
 weebCentralBase = "https://weebcentral.com"
