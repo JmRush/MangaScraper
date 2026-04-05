@@ -3,6 +3,7 @@ import time
 from random import randint
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
+from selenium.webdriver.chrome.service import Service
 import requests
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
@@ -10,17 +11,27 @@ import os
 import logging
 from pathlib import Path
 import re
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+MANGA_STORAGE_PATH = os.getenv("MANGA_STORAGE_PATH")
+
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 
+# Configure headers and options for the browser controller
+headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
 options = ChromeOptions()
 options.add_argument("--headless=new")
 options.add_argument("--log-level=3")
+options.add_argument("user-agent=" + headers)
 driver = webdriver.Chrome(options=options)
 weebCentralBase = "https://weebcentral.com"
 mangakakalotBase = "https://mangakakalot.com"
-headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
 
-BASE_DLPATH = Path("E:/MANGA STORAGE")
+
+BASE_DLPATH = Path(MANGA_STORAGE_PATH)
 
 
 def open_file(function_name):
@@ -228,7 +239,6 @@ def fetch_manga_ms(page, data, manga_idx):
 
     path_title = re.sub(r'[^\w\s-]', '', data[manga_idx]['title'])
     dir_path = BASE_DLPATH.joinpath(path_title, chapter_folder)
-    print(dir_path)
     Path(dir_path).mkdir(parents=True, exist_ok=True)
 
     
@@ -309,8 +319,9 @@ def fetch_manga_mk(page, data, manga_idx):
 
 
     #Creating the needed directories for the chapters
-    dir_path = os.path.join(BASE_DLPATH, data[manga_idx]['title'], chapter_folder)
-    os.makedirs(dir_path, exist_ok=True)
+    path_title = re.sub(r'[^\w\s-]', '', data[manga_idx]['title'])
+    dir_path = BASE_DLPATH.joinpath(path_title, chapter_folder)
+    Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 
     #Fetching all image elements from the page and storing them in 

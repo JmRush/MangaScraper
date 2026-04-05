@@ -2,3 +2,5 @@
 **/mangaDataBackupNEW.json
 **/__pycache__/
 **/venv/
+.env
+**/.env
