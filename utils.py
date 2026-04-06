@@ -116,7 +116,7 @@ def download_handler(chapter_list, manga_idx):
             if fetch_manga_ms(chapter_list[i], data, manga_idx) != True:
                 raise Exception("Error downloading the content requested: Weebcentral")
             else:
-                print("Update the data with the latest lastRipped")
+                print("Updated the data file with the latest lastRipped")
                 data[manga_idx]['lastRipped'] = chapter_list[i]
                 update_file(data)
             default_chapters_count = default_chapters_count-1
@@ -140,7 +140,7 @@ def download_handler(chapter_list, manga_idx):
             if fetch_manga_mk(chapter_list[i], data, manga_idx) != True:
                 raise Exception("Error downloading the content requested: Mangakakalot")
             else:
-                print("Update the data with the latest lastRipped")
+                print("Updated the data file with the latest lastRipped")
                 data[manga_idx]['lastRipped'] = chapter_list[i]
                 update_file(data)
 
