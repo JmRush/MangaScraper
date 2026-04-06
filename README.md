@@ -46,10 +46,10 @@ pip install -r requirements.txt
 ## Usage
 - Using Directly installed dependencies 3(A)
 ```sh
-    python mangaScrape.py
+    python "./src/main.py"
 ```
 - Using python's virtual environment 3(B)
 ```
 venv/Scripts/activate
-python mangaScraper.py
+python "./src/main.py"
 ```
