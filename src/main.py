@@ -65,13 +65,13 @@ def main():
         case "2":
             search_manga_ms()
         case "3":
-            search_manga_mk()
+            print("Mangakakalot is currently not functional due to cloudflare protection.")
         case "4":
             update_manga_data()
         case "5":
             download_index_manga_ms()
         case "6":
-            download_manga_mk()
+            print("Mangakakalot is currently not functional due to cloudflare protection.")
         case _:
             print("Oops nothing matches your selected item!")
 
