@@ -3,8 +3,9 @@ from selenium.webdriver.common.by import By
 import time
 from datetime import datetime, date
 from urllib.parse import quote
-from helperfunctions import insert_to_file, download_handler, match_index_and_source, clean_and_strip, open_file, update_file
-from helperfunctions import weebCentralBase
+from utils import download_handler, match_index_and_source, clean_and_strip
+from storage_utils import insert_to_file, open_file, update_file
+from utils import weebCentralBase
 from driver import get_driver, close_driver
 
 def search_manga_ms():

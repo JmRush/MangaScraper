@@ -1,8 +1,9 @@
 import time
 from datetime import datetime
 from bs4 import BeautifulSoup
-from helperfunctions import clean_and_strip, insert_to_file, download_handler, match_index_and_source, open_file, update_file
-from helperfunctions import mangakakalotBase
+from utils import clean_and_strip, download_handler, match_index_and_source
+from storage_utils import insert_to_file, open_file, update_file
+from utils import mangakakalotBase
 from driver import get_driver, close_driver
 
 

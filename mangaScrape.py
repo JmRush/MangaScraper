@@ -1,6 +1,7 @@
 from weebcentral import search_manga_ms, download_index_manga_ms, update_manga_data_wc
 from mangakakalot import search_manga_mk, download_manga_mk, update_manga_data_mk
-from helperfunctions import open_file, weebCentralBase, mangakakalotBase
+from utils import weebCentralBase, mangakakalotBase
+from storage_utils import open_file
 
 def view_manga():
     data = open_file("view_manga")
