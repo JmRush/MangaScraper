@@ -9,7 +9,7 @@ def get_driver():
 
     if _driver is None:
         options = ChromeOptions()
-        options.add_argument("--headless=new")
+        #options.add_argument("--headless=new")
         options.add_argument("--log-level=3")
         options.add_argument("user-agent=" + headers)
         _driver = webdriver.Chrome(options=options)

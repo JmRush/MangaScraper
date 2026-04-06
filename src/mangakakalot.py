@@ -15,11 +15,13 @@ def search_manga_mk():
 
     # Fetch page
     driver = get_driver()
-    search_url = "https://mangakakalot.com/search/story/" + user_manga
+    search_url = mangakakalotBase + "/search/story/" + user_manga
+    time.sleep(2)
     driver.get(search_url)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
     #Get the element that wraps the manga containers, check if it exists
+    print(soup.prettify())
     manga_data_wrapper = soup.findAll('div', class_="story_item")
     if (manga_data_wrapper == []):
         print("Nothing found on mangakakalot, please retry your search or select from another source")
@@ -115,24 +117,24 @@ def get_genre_and_status(link):
                 item = item.split(': ')
                 manga_status = item[1]
 
-    if ("https://chapmanganato.to" in link):
-        data_container = soup.find("table", class_="variations-tableInfo")
-        container_rows = data_container.findAll('tr')
+    #if ("https://chapmanganato.to" in link):
+        #data_container = soup.find("table", class_="variations-tableInfo")
+        #container_rows = data_container.findAll('tr')
 
-        for i in range(len(container_rows)):
-            # find first table data in each row with the tag "status and genres"
-            td = container_rows[i].find('td')
-            td_desc = clean_and_strip(td.text)
+        #for i in range(len(container_rows)):
+            ## find first table data in each row with the tag "status and genres"
+            #td = container_rows[i].find('td')
+            #td_desc = clean_and_strip(td.text)
 
-            #Only capture the status and genre data, as we already have the other metadata from the search card
-            if (td_desc == 'Status :'):
-                status_element = container_rows[i].findAll('td')
-                manga_status = clean_and_strip(status_element[1].text)
-            elif (td_desc == 'Genres :'):
-                genre_element_group = container_rows[i].findAll('td')
-                genre_group_links = genre_element_group[1].findAll('a')
-                for item in range(len(genre_group_links)):
-                    genre_list.append(genre_group_links[item].text)
+            ##Only capture the status and genre data, as we already have the other metadata from the search card
+            #if (td_desc == 'Status :'):
+                #status_element = container_rows[i].findAll('td')
+                #manga_status = clean_and_strip(status_element[1].text)
+            #elif (td_desc == 'Genres :'):
+                #genre_element_group = container_rows[i].findAll('td')
+                #genre_group_links = genre_element_group[1].findAll('a')
+                #for item in range(len(genre_group_links)):
+                    #genre_list.append(genre_group_links[item].text)
 
     return genre_list, manga_status
 
@@ -149,17 +151,17 @@ def get_chapter_list_mk(manga_idx):
 
     #Fetch the manga page with the chapter list and get the chapter list, using different selectors for the two domains
     chapter_list = []
-    if "chapmanganato" in manga_source:
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
+    #if "chapmanganato" in manga_source:
+        #soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-        chapter_container = soup.find('ul', class_="row-content-chapter")
-        list_items = chapter_container.findAll("li", class_="a-h")
+        #chapter_container = soup.find('ul', class_="row-content-chapter")
+        #list_items = chapter_container.findAll("li", class_="a-h")
 
-        #Fetch the links to each chapter available and append to list
-        for i in range(len(list_items)):
-            anchor_element = list_items[i].find('a')
-            link = anchor_element['href']
-            chapter_list.append(link)
+        ##Fetch the links to each chapter available and append to list
+        #for i in range(len(list_items)):
+            #anchor_element = list_items[i].find('a')
+            #link = anchor_element['href']
+            #chapter_list.append(link)
 
     if "mangakakalot" in manga_source:
         soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -216,30 +218,30 @@ def update_manga_data_mk(manga_idx, data):
         else:
             raise Exception("Unable to find time updated, status or latest chapter")
 
-    if ("chapmanganato" in link):
-        #data wrappers for status, last updated, and latest chapter
-        status_wrapper = soup.find("i", "info-status").parent.parent #Easiest way to grab the data was find a unique child element
-        last_updated_wrapper = soup.find("i", "info-time").parent.parent #Easiest way to grab the data was find a unique child element
-        latest_chapter_wrapper = soup.find("ul", "row-content-chapter")
+    #if ("chapmanganato" in link):
+        ##data wrappers for status, last updated, and latest chapter
+        #status_wrapper = soup.find("i", "info-status").parent.parent #Easiest way to grab the data was find a unique child element
+        #last_updated_wrapper = soup.find("i", "info-time").parent.parent #Easiest way to grab the data was find a unique child element
+        #latest_chapter_wrapper = soup.find("ul", "row-content-chapter")
 
-        #getting the elements holding the data from the wrappers
-        status = status_wrapper.find("td", "table-value")
-        last_updated = last_updated_wrapper.find("span", "stre-value")
-        latest_chapter = latest_chapter_wrapper.find("a", "chapter-name text-nowrap")
+        ##getting the elements holding the data from the wrappers
+        #status = status_wrapper.find("td", "table-value")
+        #last_updated = last_updated_wrapper.find("span", "stre-value")
+        #latest_chapter = latest_chapter_wrapper.find("a", "chapter-name text-nowrap")
 
-        #If the items are not "Falsy", we can grab the text from the elements and update the file
-        if(status and last_updated and latest_chapter):
-            status = status.text
-            last_updated = last_updated.text
-            latest_chapter = latest_chapter.text
+        ##If the items are not "Falsy", we can grab the text from the elements and update the file
+        #if(status and last_updated and latest_chapter):
+            #status = status.text
+            #last_updated = last_updated.text
+            #latest_chapter = latest_chapter.text
 
-            data[manga_idx]["status"] = status
-            data[manga_idx]["lastChapter"] = latest_chapter
-            #process date to be in the format of mm-dd-yyyy
-            last_updated = clean_and_strip(last_updated.split("-")[0])
-            last_updated = datetime.strptime(last_updated, '%b %d,%Y').strftime('%m-%d-%Y')
-            data[manga_idx]["lastUpdated"] = last_updated
-            update_file(data)
-        else:
-            raise Exception("Unable to find time updated, status or latest chapter")
+            #data[manga_idx]["status"] = status
+            #data[manga_idx]["lastChapter"] = latest_chapter
+            ##process date to be in the format of mm-dd-yyyy
+            #last_updated = clean_and_strip(last_updated.split("-")[0])
+            #last_updated = datetime.strptime(last_updated, '%b %d,%Y').strftime('%m-%d-%Y')
+            #data[manga_idx]["lastUpdated"] = last_updated
+            #update_file(data)
+        #else:
+            #raise Exception("Unable to find time updated, status or latest chapter")
 

@@ -4,6 +4,8 @@ This is a personal project I created for my own use. Use it at your own discreti
 ## Disclaimer 
 Disclaimer: Please use this project responsibly and ethically. These websites provide content for free, and excessive or improper scraping may violate their terms of service. This project is intended for personal use only and may break at any time due to changes in website structures, as web scraping is inherently fragile.
 
+## Mangakakalot is currently not functional due to cloudflare protection.
+
 ## Background
 I maintain a NAS that stores a large collection of books and manga. This project allows me to scrape two sources, download manga/manhwa images in order, and track all downloaded content. It also keeps track of all the manga/manhwa the user downloads, along with a set of metadata that is used to update, download, and search for new reading material. I populate my NAS reader with the results of this project on a daily basis!
 ## Features

@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 # Configure headers and options for the browser controller
 headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
 weebCentralBase = "https://weebcentral.com"
-mangakakalotBase = "https://mangakakalot.com"
+mangakakalotBase = "https://mangakakalot.gg"
 
 
 BASE_DLPATH = Path(MANGA_STORAGE_PATH)
@@ -230,17 +230,17 @@ def fetch_manga_mk(page, data, manga_idx):
 
     # chapter folder name creations depending on the domain Mangakakalot redirect
     chapter_folder = ""
-    if "chapmanganato" in data[manga_idx]['link']:
-        chapter_selection = soup.find("select", class_="navi-change-chapter")
-        chapter_selection_element = chapter_selection.find("option", selected=True) #Selecting an option box with text about current chapter
-        chapter_selection_text = clean_and_strip(chapter_selection_element.text)
-        chapter_folder += chapter_selection_text
-        chapter_folder = re.sub(r'[^a-zA-Z0-9._-]', '', chapter_folder)
-        print(chapter_folder)
+    #if "chapmanganato" in data[manga_idx]['link']:
+        #chapter_selection = soup.find("select", class_="navi-change-chapter")
+        #chapter_selection_element = chapter_selection.find("option", selected=True) #Selecting an option box with text about current chapter
+        #chapter_selection_text = clean_and_strip(chapter_selection_element.text)
+        #chapter_folder += chapter_selection_text
+        #chapter_folder = re.sub(r'[^a-zA-Z0-9._-]', '', chapter_folder)
+        #print(chapter_folder)
 
 
 
-    elif "mangakakalot" in data[manga_idx]["link"]:
+    if "mangakakalot" in data[manga_idx]["link"]:
         chapter_h1 = soup.find("h1", class_="current-chapter")
         chapter_text = chapter_h1.text.split(": ")
         
@@ -287,10 +287,10 @@ def fetch_manga_mk(page, data, manga_idx):
             #Selecting referer dyanmically based on the domain - mangakakalot uses mutliple domains to host the manga metadata
             #referer changes based on the domain
             referer = ""
-            if "chapmanganato" in data[manga_idx]['link']:
-                referer = "https://chapmanganato.to/"
-            elif "mangakakalot" in data[manga_idx]['link']:
-                referer = "https://mangakakalot.com/"
+            #if "chapmanganato" in data[manga_idx]['link']:
+                #referer = "https://chapmanganato.to/"
+            if "mangakakalot" in data[manga_idx]['link']:
+                referer = mangakakalotBase
 
 
             response = session.get(image_url, headers={'User-Agent': headers, 'Referer': referer})
