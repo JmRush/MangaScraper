@@ -1,9 +1,6 @@
 import json
 import time
 from random import randint
-from selenium import webdriver
-from selenium.webdriver import ChromeOptions
-from selenium.webdriver.chrome.service import Service
 import requests
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
@@ -12,6 +9,7 @@ import logging
 from pathlib import Path
 import re
 from dotenv import load_dotenv
+from driver import get_driver, close_driver
 
 # Load environment variables from .env file
 load_dotenv()
@@ -22,11 +20,6 @@ logging.basicConfig(level=logging.INFO)
 
 # Configure headers and options for the browser controller
 headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
-options = ChromeOptions()
-options.add_argument("--headless=new")
-options.add_argument("--log-level=3")
-options.add_argument("user-agent=" + headers)
-driver = webdriver.Chrome(options=options)
 weebCentralBase = "https://weebcentral.com"
 mangakakalotBase = "https://mangakakalot.com"
 
@@ -219,6 +212,7 @@ def download_handler(chapter_list, manga_idx):
             
 
 def fetch_manga_ms(page, data, manga_idx):
+    driver = get_driver()
     driver.get(page)
     time.sleep(2)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -285,6 +279,7 @@ def fetch_manga_ms(page, data, manga_idx):
     return True
 
 def fetch_manga_mk(page, data, manga_idx):
+    driver = get_driver()
     driver.get(str(page))
     time.sleep(2)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -369,4 +364,3 @@ def fetch_manga_mk(page, data, manga_idx):
             if image_count % 10 == 0:
                 print("Saved {}".format(save_path))
                 time.sleep(randint(9, 15))
-    

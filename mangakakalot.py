@@ -2,8 +2,8 @@ import time
 from datetime import datetime
 from bs4 import BeautifulSoup
 from helperfunctions import clean_and_strip, insert_to_file, download_handler, match_index_and_source, open_file, update_file
-from helperfunctions import driver, mangakakalotBase
-
+from helperfunctions import mangakakalotBase
+from driver import get_driver, close_driver
 
 
 def search_manga_mk():
@@ -13,6 +13,7 @@ def search_manga_mk():
         user_manga = user_manga.replace(" ", "_")
 
     # Fetch page
+    driver = get_driver()
     search_url = "https://mangakakalot.com/search/story/" + user_manga
     driver.get(search_url)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -92,6 +93,7 @@ def get_genre_and_status(link):
     # ----------------------------------------------------------------------------------------
     #Genre and status are both found on the main endpoint of the manga, not on the search card
     # ----------------------------------------------------------------------------------------
+    driver = get_driver()
     driver.get(link)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
@@ -140,6 +142,7 @@ def get_chapter_list_mk(manga_idx):
         raise Exception("Data is empty or not found")
 
     #Getting the link to the selected manga
+    driver = get_driver()
     manga_source = data[manga_idx]["link"]
     driver.get(manga_source)
 
@@ -175,6 +178,7 @@ def get_chapter_list_mk(manga_idx):
 
 def update_manga_data_mk(manga_idx, data):
     #Updating some of the metadata for the manga, such as the latest chapter, last updated, and the running status
+    driver = get_driver()
     link = data[manga_idx]["link"]
     driver.get(link)
     time.sleep(2)

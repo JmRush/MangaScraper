@@ -4,9 +4,11 @@ import time
 from datetime import datetime, date
 from urllib.parse import quote
 from helperfunctions import insert_to_file, download_handler, match_index_and_source, clean_and_strip, open_file, update_file
-from helperfunctions import driver, weebCentralBase
+from helperfunctions import weebCentralBase
+from driver import get_driver, close_driver
 
 def search_manga_ms():
+    driver = get_driver()
     #Fetch the page the user requests
     user_manga = input("Enter manga: ")
     user_manga = quote(user_manga)
@@ -37,7 +39,6 @@ def search_manga_ms():
         if "https://weebcentral.com/series/" in manga['href']:
             manga_results.append(manga)
 
-    print(manga_results)
     #Print out the manga results
     for i in range(len(manga_results)):
         list_num = i+1
@@ -147,6 +148,8 @@ def download_index_manga_ms():
     
 
 def get_chapter_list_ms(manga_idx):
+    driver = get_driver()
+
     data = open_file("get_chapter_list_ms")
     if data == -1 or data == None:
         raise Exception("Data is empty or not found")
@@ -172,6 +175,7 @@ def get_chapter_list_ms(manga_idx):
     download_handler(chapter_list, manga_idx)
 
 def update_manga_data_wc(manga_idx, data):
+    driver = get_driver()
     page = data[manga_idx]["link"]
     driver.get(page)
     time.sleep(2)
