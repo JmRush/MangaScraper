@@ -65,15 +65,14 @@ def main():
         case "2":
             search_manga_ms()
         case "3":
-            print("Mangakakalot is currently not functional due to cloudflare protection.")
-        case "4":
             update_manga_data()
-        case "5":
+        case "4":
             download_index_manga_ms()
-        case "6":
-            print("Mangakakalot is currently not functional due to cloudflare protection.")
         case _:
             print("Oops nothing matches your selected item!")
+
+    print("Thank you for using MangaScraper! See you next time!")
+    close_driver();
 
 
 main()
