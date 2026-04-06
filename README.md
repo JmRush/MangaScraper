@@ -22,6 +22,8 @@ I maintain a NAS that stores a large collection of books and manga. This project
 - python3
 - beautifulsoup
 - selenium
+- requests
+- python-dotenv
 - [chromedriver](https://googlechromelabs.github.io/chrome-for-testing/) use the most up to date STABLE version available for your OS
 ## Steps to setup
 1. Install [python](https://www.python.org/downloads/) and follow the download instructions
@@ -33,7 +35,7 @@ cd MangaScraper
 3. Install Dependencies
 - (A) Install dependencies directly
 ```
-pip install beautifulsoup4 selenium requests
+pip install beautifulsoup4 selenium requests python-dotenv
 ```
 - (B) Use python's virtual environment - RECOMMENDED
 ```
